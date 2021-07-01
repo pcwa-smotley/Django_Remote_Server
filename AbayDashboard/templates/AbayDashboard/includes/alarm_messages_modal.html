@@ -1,0 +1,101 @@
+<!-- Button trigger modal -->
+{% load bootstrap4 %}
+{% load static %}
+{% load custom_string_rep %}
+{{ form.media }}            {# Adds date-picker required JS and CSS #}
+<!-- Modal -->
+<div class="modal fade show" id="alarm_messages_modal" role="dialog" tabindex="-1">
+    <div id="alarm_messages_modal_django" class="modal-dialog modal-dialog-centered" role="document" style="min-width: 80%;">
+        <div class="modal-content" id="alarm_messages_modal_content_django">
+            <div class="modal-header" style="background-color: #5a5757">
+                <h5 class="modal-title" id="modalTitle_messaged" style="color: white">
+                    Recently Triggered Alarms
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modal-alert-messages-body" class="modal-body">
+                <form id="alert_table_form" class="form-horizontal" method = "POST">
+                {%  csrf_token %}
+                <table class="table table-hover table-striped" id="messages_table">
+                    <thead>
+                    <tr>
+                      <th scope="col" id="table_viewed">Active</th>
+                      <th scope="col" id="table_time">Issued</th>
+                      <th scope="col" id="table_trigger">Triggered By</th>
+                      <th scope="col" id="table_setpoint">Your Setpoint</th>
+                      <th scope="col" id="table_setpoint">Triggered Val</th>
+                      <th scope="col" id="table_setpoint">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for alert in user_issued_alarms %}
+                      <tr class="alert_in_table" id="alert-table_{{ alert.pk }}">
+                      {% if alert.fields.alarm_still_active == True %}
+                          <td style="color: #f4f4f400">
+                            <span class="dot"></span>
+                          </td>
+                      {% else %}
+                          <td style="color: #f4f4f400">
+                            <span class="dot" style="display: none;"></span>
+                          </td>
+                      {% endif %}
+                        <td>{{ alert.fields.trigger_time | date:'M jS P' }}</td>
+                        <td>{{ alert.fields.alarm_trigger | custom_string_rep}}</td>
+                        <td>{{ alert.fields.alarm_setpoint }}</td>
+                        <td>{{ alert.fields.trigger_value }}</td>
+                      <td><i class="delete_old_alert far fa-trash-alt" style="color:red; cursor:pointer; padding: 0 20px 0 20px"></i></td>
+                      </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    //The "Mail Icon" button in Sidebar Footer
+    $('#alarm_messages').click(function(){
+        $('#alarm_messages_modal').modal('toggle');
+    });
+
+    $('.delete_old_alert').click(function(){
+        let par_elm = ($(this).closest('tr').attr('id'))  // The parent <tr>, which is the entire row.
+        let pk = par_elm.split('_')[1]                     // A way to get the pk value (the row num) from the database
+        $.ajax({ // create an AJAX call...
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}', 'pk_delete': pk}, // get the form data
+            type: $(this).closest("form").attr('method'), // GET or POST
+            url: $(this).closest("form").attr('action'), // the file to call
+            success: function(response) { // on success..
+                toast_launcher({'tags':'success', 'message':'Datapoint Deleted'})
+
+                $('#'+par_elm).fadeOut()
+            },
+            error: function(e, x, r) { // on error..
+                $('#error_div').html(e); // update the DIV
+                if (e.msg){
+                    toast_launcher(e)
+                }
+            }
+        });
+    })
+
+    function toast_launcher(data){
+        if (data.tags=="success"){
+            toastr.success(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="info"){
+            toastr.info(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="warning"){
+            toastr.warning(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="error"){
+            toastr.error(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+    }
+</script>

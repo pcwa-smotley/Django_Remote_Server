@@ -1,0 +1,116 @@
+<!-- Button trigger modal -->
+{% load bootstrap4 %}
+{% load static %}
+<!-- Modal -->
+<div class="modal fade show" id="startPython" role="dialog" tabindex="-1">
+    <div id="python_modal" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" id="python_modal_content_django">
+            <div class="modal-header">
+                <h5 class="modal-title">Program Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="blank_form" method="POST">
+                 {%  csrf_token %}
+                <div id="modal-body" class="modal-body">
+                    <div id="program_running">
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                        <b><p class="success" style="color: #73AF55; text-align: center">
+                            Program is running
+                        </p></b>
+                    </div>
+                    <div id="program_not_running">
+                        <input class="form-control" name="restart_pi_checker" id="restart_request" type="text" placeholder="Restart" value="" style="display: none">
+                        <svg class="fail_checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="fail__circle" cx="26" cy="26" r="25"/>
+                            <path class="fail__check" fill="none" d="M14.1 14.1l25.5,25.5 M40,14.1 l -25.5,25.5"/>
+                        </svg>
+                        <b><p class="success" style="color: #800000; text-align: center">
+                            Crap!
+                        </p></b>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" id="restartProgram" style="display: block" type="submit">Restart Program</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    //The "Edit Alarm" button in the sidebar
+    $('#pi_checker_status').click(function(){
+        let program_status = $("#dummy-output-timer").attr("data-pi_checker_running")
+        var $program_running = $('#program_running'),
+            $program_not_running = $('#program_not_running'),
+            $restartProgramBtn = $('#restartProgram')
+
+        if (program_status==="true"){
+            // program is running
+            $program_running.prop("style", "display: block")
+            $program_not_running.prop("style", "display: none")
+            $restartProgramBtn.prop("style", "display: none")
+        }
+        else{
+            // program is not running.
+            $program_running.prop("style", "display: none")
+            $program_not_running.prop("style", "display: block")
+            $restartProgramBtn.prop("style", "display: block")
+        }
+        $('#startPython').modal('toggle');
+    });
+
+    // This prevents the page from reloading when we hit the submit button. However, since we're not
+    // reloading, the views.py won't send any info in the {messages} tags, so
+    $(document).ready(function() {
+    $('#restartProgram').submit(function() { // On form submit event
+        console.log("RESTART PROGRAM HIT")
+        $.ajax({ // create an AJAX call...
+            data: $(this).serialize(), // get the form data
+            type: $(this).attr('method'), // GET or POST
+            url: $(this).attr('action'), // the file to call
+            success: function(response) { // on success..
+                console.log("SUCCESS IN RESTART PROGRAM")
+                if (response.msg) {
+                    response.msg.forEach(ele => {
+                        toast_launcher(ele)
+                    })
+                }
+
+                $('#startPython').modal('toggle'); // Close modal if it's open
+                $('#success_div').html(response); // update the DIV
+                //toastr.error("Value Not Accepted", '',{closeButton: true, timeOut:0, extendedTimeOut:0, positionClass:"toast-top-right"})
+            },
+            error: function(e, x, r) { // on error..
+                $('#error_div').html(e); // update the DIV
+                if (e.msg){
+                    toast_launcher(e)
+                }
+            }
+        });
+        return false;
+    });
+});
+    function toast_launcher(data){
+        if (data.tags=="success"){
+            toastr.success(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="info"){
+            toastr.info(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="warning"){
+            toastr.warning(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="error"){
+            toastr.error(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+    }
+
+</script>

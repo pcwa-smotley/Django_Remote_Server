@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load plotly_dash %}
+    <meta charset="UTF-8">
+        {% load static %}
+{% load materializecss %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Title</title>
+
+    {% plotly_header %}
+</head>
+<body>
+
+<h1>Home Page</h1>
+      {% plotly_direct name='dash_django' %}
+</body>
+{% plotly_footer %}
+</html>
+
+
+

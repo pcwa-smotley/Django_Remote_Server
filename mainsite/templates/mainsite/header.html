@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load plotly_dash%}
+     <!--Let browser know website is optimized for mobile-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+     <title>Snodas Elevation</title>
+     <!--Import Google Icon Font For Materialize-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" rel="stylesheet">
+      <!-- Compiled and minified CSS -->
+
+
+    <!-- MATERIALIZE CSS and JS-->
+    <!--
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        -->
+
+    <!-- jQuery-->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js'></script>
+
+     <!-- BOOTSTRAP CSS and JS-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+
+    <!-- Compiled and minified JavaScript -->
+
+    <!-- D3 JS-->
+    <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+    <script src="https://d3js.org/d3-time.v1.min.js"></script>
+    <script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+    <!-- Mapbox JS-->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.js'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--Toastr JS-->
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css' rel='stylesheet' />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js'></script>
+
+    <!-- XDSoft DateTimePicker -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css" integrity="sha256-DOS9W6NR+NFe1fUhEE0PGKY/fubbUCnOfTje2JMDw3Y=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha256-FEqEelWI3WouFOo2VWP/uJfs1y8KJ++FLh2Lbqc8SJk=" crossorigin="anonymous"></script>
+    {% load static %}
+    <!-- Compiled and minified CSS -->
+    <!-- My CSS changes -->
+    <link href="{% static "/css/style.css" %}" rel="stylesheet">
+    {% plotly_header %}
+</head>
+<body>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>
+
+<script>
+//Initalize Materialize Time Picker
+document.addEventListener('DOMContentLoaded', function() {
+    //M.AutoInit();
+    var elems = document.querySelectorAll('.timepicker');
+    var options = {
+        twelveHour: true,
+        vibrate: false,
+        defaultTime: "06:00"
+    }
+
+    $(".sidebar-dropdown > a").click(function() {
+    $(".sidebar-submenu").slideUp(200);
+      if (
+        $(this)
+          .parent()
+          .hasClass("active")
+      ) {
+        $(".sidebar-dropdown").removeClass("active");
+        $(this)
+          .parent()
+          .removeClass("active");
+      } else {
+        $(".sidebar-dropdown").removeClass("active");
+        $(this)
+          .next(".sidebar-submenu")
+          .slideDown(200);
+        $(this)
+          .parent()
+          .addClass("active");
+      }
+    });
+
+    $("#close-sidebar").click(function() {
+      $(".page-wrapper").removeClass("toggled");
+    });
+    $("#show-sidebar").click(function() {
+      $(".page-wrapper").addClass("toggled");
+    });
+
+    // This will remove the side bar if screensize is changed, but it will also allow for the toggle
+    // to work, when the screen size is set (i.e. when the user stops moving it).
+    var $pw = $(".page-wrapper")
+    $(window).resize(function() {
+    // This will execute whenever the window is resized
+       if($(window).width()<768){
+           if($pw.hasClass("toggled")) {
+               $(".page-wrapper").removeClass("toggled");
+           }
+       }
+       else{
+           if(!$pw.hasClass("toggled")) {
+               $(".page-wrapper").addClass("toggled");
+           }
+       }
+    });
+    let inital_width = $(window).width()
+    if (inital_width<768){
+        if($pw.hasClass("toggled")) {
+               $(".page-wrapper").removeClass("toggled");
+           }
+    }
+})
+
+
+</script>

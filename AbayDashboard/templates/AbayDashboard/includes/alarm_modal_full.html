@@ -1,0 +1,236 @@
+<!-- Button trigger modal -->
+{% load bootstrap4 %}
+{% load static %}
+<!-- Modal -->
+<div class="modal fade show" id="myModal" role="dialog" tabindex="-1">
+    <div id="alarm_modal_django" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" id="alarm_modal_content_django">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Alarm Preferences</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <form id="alarmForm" method = "POST">
+                    <div class="accordion" id="accordionExample">
+                      <div class="card">
+                        <div class="card-header" id="headingOne">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                              Flows
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                          <div class="card-body">
+                            <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Location</th>
+                                <th scope="col">Lower Limit</th>
+                                <th scope="col">Upper Limit</th>
+                            </tr>
+                            </thead>
+                                {%  csrf_token %}
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">R4</th>
+                                        <td><input class="form-control" name="r4_lo" id="r4_lo" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'r4_lo'  | default_if_none:"" }}"></td>
+                                        <td><input class="form-control" name="r4_hi" id="r4_hi" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'r4_hi'  | default_if_none:""}}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">R11</th>
+                                        <td><input class="form-control" name="r11_lo" id="r11_lo" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'r11_lo'  | default_if_none:""}}"></td>
+                                        <td><input class="form-control" name="r11_hi" id="r11_hi" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'r11_hi'  | default_if_none:""}}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">R30</th>
+                                        <td><input class="form-control" name="r30_lo" id="r30_lo" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'r30_lo'  | default_if_none:""}}"></td>
+                                        <td><input class="form-control" name="r30_hi" id="r30_hi" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'r30_hi'  | default_if_none:""}}"></td>
+                                    </tr>
+                                    </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="card">
+                        <div class="card-header" id="headingTwo">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                              After Bay
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                          <div class="card-body">
+                            <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Afterbay</th>
+                                <th scope="col">Lower Limit</th>
+                                <th scope="col">Upper Limit</th>
+                            </tr>
+                            </thead>
+                                {%  csrf_token %}
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">Elevation</th>
+                                        <td><input class="form-control" name="afterbay_lo" id="afterbay_lo" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'afterbay_lo'  | default_if_none:""}}"></td>
+                                        <td><input class="form-control" name="afterbay_hi" id="afterbay_hi" type="text" placeholder="Not Set" value="{{user_alert_data.fields|get_item:'afterbay_hi'  | default_if_none:""}}"></td>
+                                    </tr>
+                                    </tbody>
+                            </table>
+                              <div class="col-sm-10">
+                                  <input class="form-check-input" type="checkbox" value="c" id="flexCheckDefault" checked>
+                                  <label class="form-check-label" for="flexCheckDefault">
+                                    Alert if Float Changes
+                                  </label>
+                              </div>
+                          </div>
+                          </div>
+                        </div>
+                      <div class="card">
+                        <div class="card-header" id="headingFour">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                              Recreational Releases
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
+                          <div class="card-body">
+                            <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Rafting Times</th>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Time</th>
+                            </tr>
+                            </thead>
+                                {%  csrf_token %}
+                                {% load tz %}
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">Today</th>
+                                        <td><input class="form-control" name="today_recStart" id="today_recStart" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'today_recStart'|date:"f A"  | default_if_none:"No Rafting Today"}}"></td>
+                                        <td><input class="form-control" name="today_recEnd" id="today_recEnd" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'today_recEnd'|date:"f A"  | default_if_none:"No Rafting Today"}}"></td>
+
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Tomorrow</th>
+                                        <td><input class="form-control" name="tomorrow_recStart" id="tomorrow_recStart" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'tomorrow_recStart'|date:"f A"  | default_if_none:"No Rafting Tomorrow"}}"></td>
+                                        <td><input class="form-control" name="tomorrow_recEnd" id="tomorrow_recEnd" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'tomorrow_recEnd'|date:"f A"  | default_if_none:"No Rafting Tomorrow"}}"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Alert Buffer</th>
+                                        <td><input class="form-control" name="rampup_oxbow" id="rampup_oxbow" type="text" placeholder="Rafting Time" value="{{user_alert_data.fields|get_item:'rampup_oxbow'  | default_if_none:"Minutes"}}"></td>
+                                        <td><input class="form-control" name="rampdown_oxbow" id="rampdown_oxbow" type="text" placeholder="Rafting Time" value="{{user_alert_data.fields|get_item:'rampdown_oxbow'  | default_if_none:"Minutes"}}"></td>
+                                    </tr>
+                                    </tbody>
+                            </table>
+                              <div class="col-sm-10">
+                                  <input class="form-check-input" type="checkbox" value="c" id="flexCheckDefault" checked>
+                                  <label class="form-check-label" for="flexCheckDefault">
+                                    Alert if Float Changes
+                                  </label>
+                              </div>
+                          </div>
+                          </div>
+                        </div>
+                      <div class="card">
+                        <div class="card-header" id="headingThree">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                              Generation
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+                          <div class="card-body">
+                            <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Unit</th>
+                                <th scope="col">Max Deviation</th>
+                            </tr>
+                            </thead>
+                                {%  csrf_token %}
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">Oxbow</th>
+                                        <td><input class="form-control" name="oxbow_deviation" id="oxbow_deviation" type="text" value="{{user_alert_data.fields|get_item:'oxbow_deviation'  | default_if_none:""}}"></td>
+                                    </tr>
+                                    </tbody>
+                            </table>
+                          </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div loading_state="[object Object]" class="modal-footer">
+                        <button class="btn btn-primary" id="alarmSubmit" style="display: block" type="submit">Submit Changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    //The "Edit Alarm" button in the sidebar
+    $('#open_alert').click(function(){
+        $('#myModal').modal('toggle');
+    });
+
+     //The Gear Icon button in the sidebar footer
+    $('#alarm_prefs').click(function(){
+        $('#myModal').modal('toggle');
+    });
+
+    // This prevents the page from reloading when we hit the submit button. However, since we're not
+    // reloading, the views.py won't send any info in the {messages} tags, so
+    $(document).ready(function() {
+    $('#alarmForm').submit(function() { // On form submit event
+        $.ajax({ // create an AJAX call...
+            data: $(this).serialize(), // get the form data
+            type: $(this).attr('method'), // GET or POST
+            url: $(this).attr('action'), // the file to call
+            success: function(response) { // on success..
+                if (response.msg) {
+                    response.msg.forEach(ele => {
+                        toast_launcher(ele)
+                    })
+                }
+
+                $('#myModal').modal('toggle'); // Close modal if it's open
+                $('#success_div').html(response); // update the DIV
+                //toastr.error("Value Not Accepted", '',{closeButton: true, timeOut:0, extendedTimeOut:0, positionClass:"toast-top-right"})
+            },
+            error: function(e, x, r) { // on error..
+                $('#error_div').html(e); // update the DIV
+                if (e.msg){
+                    toast_launcher(e)
+                }
+            }
+        });
+        return false;
+    });
+});
+    function toast_launcher(data){
+        if (data.tags=="success"){
+            toastr.success(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="info"){
+            toastr.info(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="warning"){
+            toastr.warning(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="error"){
+            toastr.error(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+    }
+
+</script>

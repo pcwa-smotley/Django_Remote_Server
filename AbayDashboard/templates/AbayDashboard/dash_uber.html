@@ -1,0 +1,18 @@
+{% include "AbayDashboard/header.html" %}
+{% load static %}
+{% load materializecss %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- Uber CSS -->
+<link href="{% static "/css/style.css" %}" rel="stylesheet">
+<link href="{% static "/css/base.css" %}" rel="stylesheet">
+
+{% block content %}
+    {% load plotly_dash %}
+<h1>Home Page</h1>
+
+    {% plotly_app name='UberExample' ratio=0.45 %}
+<br>
+
+    {{ plot1 | safe }}
+
+{% endblock %}

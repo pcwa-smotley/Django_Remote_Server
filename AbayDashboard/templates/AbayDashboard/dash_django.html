@@ -1,0 +1,19 @@
+{% include "AbayDashboard/header.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block content %}
+<div class="page-wrapper chiller-theme toggled">
+    <!-- Collapsible Sidebar -->
+    {% include "AbayDashboard/includes/sidebar.html" %}
+
+    <!-- END sidebar-wrapper  -->
+
+    <!-- Page Content -->
+    {% include "AbayDashboard/includes/dash_content.html" %}
+    {% include "AbayDashboard/includes/alarm_modal_full.html" %}
+    {% include "AbayDashboard/includes/alarm_mute_modal.html" %}
+    {% include "AbayDashboard/includes/alarm_messages_modal.html" %}
+    {% include "AbayDashboard/includes/modal_startPython.html" %}
+</div>
+{% endblock %}
+

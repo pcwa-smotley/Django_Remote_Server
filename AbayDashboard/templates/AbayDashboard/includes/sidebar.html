@@ -1,0 +1,130 @@
+{% load static %}
+{% load bootstrap4 %}
+<!-- Collapsible Sidebar -->
+<!-- from: https://bootsnipp.com/fullscreen/Q0dAX -->
+ <a id="show-sidebar" class="btn btn-sm btn-dark" href="#">
+     <i class="fas fa-bars"></i>
+ </a>
+<nav id="sidebar" class="sidebar-wrapper">
+        <div class = "sidebar-content">
+            <!-- sidebar-brand  -->
+                <div class="sidebar-item sidebar-brand">
+                    PCWA DASHBOARD
+                    <div id="close-sidebar">
+                    <i class="fas fa-times"></i>
+                </div>
+                </div>
+                <!-- sidebar-header  -->
+                <div class="sidebar-item sidebar-header d-flex flex-nowrap">
+                    <div class="user-pic">
+                        <img class="img-responsive img-rounded" src="{% static "/images/user.jpg" %}" alt="User picture">
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">
+                            <strong>{{ user.username }}</strong>
+                        </span>
+                        <span class="user-role">Administrator</span>
+                        <span class="user-status">
+                            <i class="fa fa-circle"></i>
+                            <span>Online</span>
+                        </span>
+                    </div>
+                </div>
+                <!-- sidebar-menu  -->
+                <div class = sidebar-menu>
+        <ul>
+            <li class="header-menu">
+                <span>Set Alerts</span>
+            </li>
+            <li class="sidebar-dropdown">
+                <a href="#">
+              <i class="fa fa-bell"></i>
+              <span>Manage Alarms</span>
+               {% if new_alerts > 0 %}
+                    <span class="badge badge-pill badge-danger">{{ new_alerts }}</span>
+                {% endif %}
+            </a>
+                <div class="sidebar-submenu" style="display: none;">
+              <ul>
+                <li>
+                  <a href="#" class="submenu-icon" id="open_alert"><i class="fa fa-bell"></i>Edit Alarms</a>
+                </li>
+                <li>
+                  <a href="#" class="submenu-icon" id="open_alert_mute"><i class="fa fa-bell"></i>Alarms On/Off</a>
+                </li>
+              </ul>
+            </div>
+            </li>
+             <li class="sidebar-dropdown">
+                <a href="#">
+                  <i class="fa fa-wrench"></i>
+                  <span>Tools</span>
+                </a>
+                    <div class="sidebar-submenu" style="display: none;">
+                  <ul>
+                    <li>
+                      <a href="#">Afterbay Management</a>
+                    </li>
+                    <li>
+                      <a href="#">Weather Portal</a>
+                    </li>
+                    <li>
+                      <a href="#">Hydrology</a>
+                    </li>
+                  </ul>
+                </div>
+            </li>
+            <li class="sidebar-dropdown active">
+
+            </li>
+        <!--
+            <li class="sidebar-dropdown">
+            <a href="#">
+              <i class="fa fa-shopping-cart"></i>
+              <span>Ex Dropdown</span>
+              <span class="badge badge-pill badge-danger">3</span>
+            </a>
+            <div class="sidebar-submenu" style="display: none;">
+              <ul>
+                <li>
+                  <a href="#">Products
+
+                  </a>
+                </li>
+                <li>
+                  <a href="#">Orders</a>
+                </li>
+                <li>
+                  <a href="#">Credit cart</a>
+                </li>
+              </ul>
+            </div>
+          </li>
+          -->
+        </ul>
+        </div>
+        </div>
+        <!-- sidebar-content  -->
+        <div class="sidebar-footer">
+      <a id="alarm_messages" href="#">
+        <i class="fa fa-envelope"></i>
+          {% if new_alerts > 0 %}
+            <span class="badge badge-pill badge-success notification">{{ new_alerts }}</span>
+          {% endif %}
+      </a>
+      <a id="alarm_prefs" href="#">
+        <i class="fa fa-bell"></i>
+        <span class="badge badge-pill badge-warning notification">{{ new_alerts }}</span>
+      </a>
+        <a id="alarm_on_off" href="#">
+        <i class="fa fa-cog"></i>
+        <span class="badge-sonar"></span>
+      </a>
+      <a id="pi_checker_status" href="#" {% if user_profile_data.fields|get_item:profile_form.alarm_on.name %}
+          style="color:#8bff24; text-shadow: 0px 0px 10px rgb(40 255 1 / 50%)"
+       {% endif %}>
+        <i class="fa fa-power-off"></i>
+      </a>
+    </div>
+    </nav>
+<!-- END sidebar-wrapper  -->

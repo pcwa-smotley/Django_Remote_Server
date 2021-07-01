@@ -1,0 +1,190 @@
+<!-- Button trigger modal -->
+{% load bootstrap4 %}
+{% load static %}
+<!-- Modal -->
+<div class="modal fade show" id="myModal" role="dialog" tabindex="-1">
+    <div id="alarm_modal_django" class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" id="alarm_modal_content_django">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Alarm Preferences</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <div class="div-for-dropdown" id="alert_type">
+                    <label for="alarmtype">Alarm Type</label>
+                    <select class="form-control" name="select1" id="select1">
+                        <option value="" selected disabled>Please Select</option>
+                        <option value="1">Flow</option>
+                        <option value="2">Generation</option>
+                        <option value="3">Abay Management</option>
+                        <option value="4">Rafting Requirements</option>
+                    </select>
+                </div>
+                <div class="div-for-dropdown" id="alert_id" style="display: none">
+                    <label for="Inputselect">Select Region</label>
+                    <select class="form-control" name="select2" id="select2">
+                        <option value="1">Please Select</option>
+                        <option value="1" id="R4">R4</option>
+                        <option value="1" id="R11">R11</option>
+                        <option value="1" id="R20">R20</option>
+                        <option value="1" id="R30">R30</option>
+                        <option value="2" >Please Select</option>
+                        <option value="2">Oxbow</option>
+                        <option value="2">Ralston</option>
+                        <option value="2">Middle Fork</option>
+                        <option value="2">French Meadows</option>
+                        <option value="2">Hell Hole</option>
+                        <option value="3" >Please Select</option>
+                        <option value="3">Abay Levels</option>
+                        <option value="4" >Please Select</option>
+                        <option value="4">Rafting Start / Stop Times<option>
+                    </select>
+                </div>
+            <hr>
+                <div class="alarm_input" id="alarm_input">
+                    <form id="alarmForm" method = "POST">
+                    <div id="alarm_wrapper" class="row">
+                        {%  csrf_token %}
+                        {% for alarm in alarm_preferences %}
+                            <div class="alarm_user_input col-6" style="display: none">
+                                <input class="form-control" name="{{ alarm.name }}" id="{{ alarm.name }}" type="text" value="{{user_alert_data.fields|get_item:alarm.name  | default_if_none:""}}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="alarm_notes" style="display:none"></div>
+                    <div loading_state="[object Object]" class="modal-footer">
+                        <button class="btn btn-primary" id="alarmSubmit" style="display: none" type="submit">Submit Changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    //Code for updating pull downs after first pull down is selected.
+    var $select1 = $( '#select1' ),
+		$select2 = $( '#select2' ),
+        $options = $select2.find( 'option' );
+        $alarm_input = $('#alarm_input')
+
+        $select1.on('change', function() {
+            $('#alert_id').prop("style", "display: block")
+            $select2.html( $options.filter( '[value="' + this.value + '"]' ) );
+        } ).trigger( 'change' );
+
+        $select2.on( 'change', function() {
+            var new_html = alert_html($select2.find('option:selected').text())
+            //$alarm_input.html(new_html)
+        } ).trigger( 'change' );
+
+    //The "Edit Alarm" button in the sidebar
+    $('#open_alert').click(function(){
+        $('#myModal').modal('toggle');
+    });
+
+     //The Gear Icon button in the sidebar footer
+    $('#alarm_prefs').click(function(){
+        $('#myModal').modal('toggle');
+    });
+    function alert_html(alarmVariable){
+        $(".alert_label").remove()
+        $(".alarm_user_input").prop("style", "display: none")
+         var $r4 = $("#r4_hi, #r4_lo"),
+             $r11 = $("#r11_hi, #r11_lo"),
+             $r20 = $("#r20_hi, #r20_lo"),
+             $r30 = $("#r30_hi, #r30_lo"),
+            $abay = $("#afterbay_hi, #afterbay_lo")
+            $alarm_notes=$(".alarm_notes")
+
+        $alarm_notes.prop("style", "display: none")
+        /*
+        $r4.prop("style", "display: none")
+        $r11.prop("style", "display: none")
+        $r20.prop("style", "display: none")
+        $r30.prop("style", "display: none")
+        $abay.prop("style", "display: none")*/
+        $("#alarmSubmit").prop("style", "display: block")
+
+        if (alarmVariable === "R4"){
+            $("#r4_lo").parent().append('<strong><label for="r4_lo" class="alert_label">R4 Lower Limit</label></strong>')
+            $("#r4_hi").parent().append('<strong><label for="r4_hi" class="alert_label">R4 Upper Limit</label></strong>')
+            $r4.parent().prop("style", "display: block")
+            $alarm_notes.html('<hr><h5>Important R4 Levels:</h5>' +
+                '<ul>' +
+                '<li>500 cfs Pmin ~30MW' +
+                '</li>' +
+                 '</ul>')
+            $alarm_notes.prop("style", "display: block")
+        }
+        if (alarmVariable === "R11"){
+            $("#r11_lo").parent().append('<strong><label for="r11_lo" class="alert_label">R11 Lower Limit</label></strong>')
+            $("#r11_hi").parent().append('<strong><label for="r11_hi" class="alert_label">R11 Upper Limit</label></strong>')
+            $r11.parent().prop("style", "display: block")
+        }
+        if (alarmVariable === "R20"){
+            $("#r20_lo").parent().append('<strong><label for="r20_lo" class="alert_label">R20 Lower Limit</label></strong>')
+            $("#r20_hi").parent().append('<strong><label for="r20_hi" class="alert_label">R20 Upper Limit</label></strong>')
+            $r20.parent().prop("style", "display: block")
+        }
+        if (alarmVariable === "R30"){
+            $("#r30_lo").parent().append('<strong><label for="r30_lo" class="alert_label">R30 Lower Limit</label></strong>')
+            $("#r30_hi").parent().append('<strong><label for="r30_hi" class="alert_label">R30 Upper Limit</label></strong>')
+            $r30.parent().prop("style", "display: block")
+        }
+        if (alarmVariable === "Abay Levels"){
+            $("#afterbay_lo").parent().append('<strong><label for="afterbay_lo" class="alert_label">Lower Limit</label></strong>')
+            $("#afterbay_hi").parent().append('<strong><label for="afterbay_hi" class="alert_label">Upper Limit</label></strong>')
+            $abay.parent().prop("style", "display: block")
+        }
+    }
+    // This prevents the page from reloading when we hit the submit button. However, since we're not
+    // reloading, the views.py won't send any info in the {messages} tags, so
+    $(document).ready(function() {
+    $('#alarmForm').submit(function() { // On form submit event
+        $.ajax({ // create an AJAX call...
+            data: $(this).serialize(), // get the form data
+            type: $(this).attr('method'), // GET or POST
+            url: $(this).attr('action'), // the file to call
+            success: function(response) { // on success..
+                if (response.msg) {
+                    response.msg.forEach(ele => {
+                        toast_launcher(ele)
+                    })
+                }
+
+                $('#myModal').modal('toggle'); // Close modal if it's open
+                $('#success_div').html(response); // update the DIV
+                //toastr.error("Value Not Accepted", '',{closeButton: true, timeOut:0, extendedTimeOut:0, positionClass:"toast-top-right"})
+            },
+            error: function(e, x, r) { // on error..
+                $('#error_div').html(e); // update the DIV
+                if (e.msg){
+                    toast_launcher(e)
+                }
+            }
+        });
+        return false;
+    });
+});
+    function toast_launcher(data){
+        if (data.tags=="success"){
+            toastr.success(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="info"){
+            toastr.info(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="warning"){
+            toastr.warning(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+        if (data.tags=="error"){
+            toastr.error(data.message, {closeButton: true, timeOut:5000, positionClass:"toast-top-right"});
+        }
+    }
+
+</script>

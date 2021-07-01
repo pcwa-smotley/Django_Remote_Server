@@ -1,0 +1,22 @@
+{% load static %}
+<div class="navbar nav-extended">
+    <nav class="navbar white">
+    <div class="nav-wrapper">
+        <a href="/" class="brand-logo left">
+            <img class="responsive-img" id="logo"
+             srcset=
+                "{% static "/images/webimages/pcwa_full.png" %} 800w,
+                 {% static "/images/webimages/pcwa_letters.png" %} 480w,
+                 {% static "/images/webimages/pcwa_drop.png" %} 320w"
+             sizes=
+                "(max-width: 320px) 280px,
+                 (max-width: 480px) 440px,
+                 800px"
+             src="{% static "/images/webimages/pcwa_full.png" %}" alt="PCWA">
+        </a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+          <li><a href="/">Home</a></li>
+        </ul>
+    </div>
+    </nav>
+</div>

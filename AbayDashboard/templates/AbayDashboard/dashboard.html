@@ -1,0 +1,27 @@
+{% include "AbayDashboard/header.html" %}
+{% load static %}
+{% load materializecss %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <form method = "POST">
+        {%  csrf_token %}
+    {{ user_preferences|materializecss }}
+        <br>
+        <br>
+
+    <button class="btn" style="background-color: blueviolet; color:white" type="submit">Submit Changes</button>
+    </form>
+    <div style="width:75%;">
+		<canvas id="canvas"></canvas>
+        <script type="module" src="{% static "js/main.js" %}"></script>
+        <button id="addAbayFloat" type="button">Add Data</button>
+	</div>
+<script>
+    //Initalize Materialize Time Picker
+document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.timepicker');
+    var options = { twelveHour: true,
+                    vibrate: false,
+                    defaultTime: "06:00"}
+    var instances = M.Timepicker.init(elems, options);
+  });
+</script>

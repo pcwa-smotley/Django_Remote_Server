@@ -1,0 +1,14 @@
+{% include "mainsite/header.html" %}
+{% load static %}
+{% block scripts %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+<main class="page-content">
+    <div class="container-fluid">
+        {% load plotly_dash %}
+        <div>
+            	{% plotly_direct name='plotly_snodas' %}
+        </div>
+    </div>
+</main>
+{% plotly_footer %} <!--For some reason, the footer must go here or it will not load-->
