@@ -5,7 +5,7 @@
 {{ form.media }}            {# Adds date-picker required JS and CSS #}
 <!-- Modal -->
 <div class="modal fade show" id="alarm_messages_modal" role="dialog" tabindex="-1">
-    <div id="alarm_messages_modal_django" class="modal-dialog modal-dialog-centered" role="document" style="min-width: 80%;">
+    <div id="alarm_messages_modal_django" class="modal-dialog modal-dialog-centered .modal-dialog-scrollable" role="document" style="min-width: 80%;">
         <div class="modal-content" id="alarm_messages_modal_content_django">
             <div class="modal-header" style="background-color: #5a5757">
                 <h5 class="modal-title" id="modalTitle_messaged" style="color: white">
@@ -30,6 +30,8 @@
                     </tr>
                 </thead>
                 <tbody>
+                {% load tz %}
+                {% timezone "US/Pacific" %}
                 {% for alert in user_issued_alarms %}
                       <tr class="alert_in_table" id="alert-table_{{ alert.pk }}">
                       {% if alert.fields.alarm_still_active == True %}
@@ -48,6 +50,7 @@
                       <td><i class="delete_old_alert far fa-trash-alt" style="color:red; cursor:pointer; padding: 0 20px 0 20px"></i></td>
                       </tr>
                 {% endfor %}
+                {% endtimezone %}
             </tbody>
           </table>
                 </form>

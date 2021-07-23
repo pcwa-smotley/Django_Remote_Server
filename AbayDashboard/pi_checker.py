@@ -4,6 +4,9 @@ import platform
 from datetime import datetime, timedelta
 import pandas as pd
 import django
+import logging
+from io import StringIO
+import smtplib
 if "Linux" in platform.platform(terse=True):
     sys.path.append("/var/www/wx/")
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wx.settings')
@@ -50,7 +53,7 @@ class PiRequest:
             url_flow = j['Links']['InterpolatedData']
             return url_flow
 
-        except requests.exceptions.RequestException:
+        except (requests.exceptions.RequestException, KeyError):
             print('HTTP Request failed')
             return None
 
@@ -90,7 +93,7 @@ def main():
                         "interval": "1m",
                         },
             )
-            print('Response HTTP Status Code: {status_code}'.format(status_code=response.status_code))
+            #print('Response HTTP Status Code: {status_code}'.format(status_code=response.status_code))
             j = response.json()
 
             # We only want the "Items" object.
@@ -101,8 +104,10 @@ def main():
             df_meter.index.names = ['index']
 
             # Remove any outliers or data spikes
-            df_meter = drop_numerical_outliers(df_meter, meter, z_thresh=3)
-
+            try:
+                df_meter = drop_numerical_outliers(df_meter, meter, z_thresh=3)
+            except ValueError as e:
+                print("Unable to drop outliers", e)
             # Rename the column (this was needed if we wanted to merge all the Value columns into a dataframe)
             renamed_col = (f"{meter.meter_name}_{meter.attribute}").replace(' ', '_')
             df_meter.rename(columns={"Value": f"{renamed_col}"}, inplace=True)
@@ -116,7 +121,7 @@ def main():
             # Check to see if a new alarm needed.
             alarm_checker(meter, df_all, renamed_col)
 
-        except requests.exceptions.RequestException:
+        except (requests.exceptions.RequestException, KeyError):
             print('HTTP Request failed')
             return None
 
@@ -177,13 +182,14 @@ def alarm_checker(meter, df, column_name):
     # alerts since there's no hi/lo and there's no threshold to hit; just a change > 0.5' in an hour.
     if meter.attribute == "Elevation Setpoint":
         # The float level will be the latest value obtained in the dataset.
-        abay_float = df["Afterbay_Elevation_Setpoint"].iloc[-1]
+        abay_float = df["Afterbay_Elevation_Setpoint"].iloc[df["Afterbay_Elevation_Setpoint"].last_valid_index()]
 
         # Set initial value
         abay_float_changed = False
 
         # Check to see if the float has changed. If so, alert user.
-        if abs(abay_float - df["Afterbay_Elevation_Setpoint"].iloc[0]) > 0.5:
+        if abs(abay_float - df["Afterbay_Elevation_Setpoint"]
+                .iloc[df["Afterbay_Elevation_Setpoint"].first_valid_index()]) > 0.5:
             abay_float_changed = True
 
         #  If the float changed in the last hour, first check if the alarm is already active.
@@ -218,8 +224,8 @@ def rec_release(df):
     max_buffer = 60
 
     # The current setpoint
-    oxbow_setpoint = df["Oxbow_Gov_Setpoint"].iloc[-1]
-    oxbow_current = df["Oxbow_Power"].iloc[-1]
+    oxbow_setpoint = df["Oxbow_Gov_Setpoint"].iloc[df["Oxbow_Gov_Setpoint"].last_valid_index()]
+    oxbow_current = df["Oxbow_Power"].iloc[df["Oxbow_Power"].last_valid_index()]
 
     target_setpoint = 5.4
 
@@ -232,8 +238,8 @@ def rec_release(df):
 
     if debugging:
         tz = pytz.timezone('US/Pacific')
-        rec_start = tz.localize(datetime(year=2021,month=6,day=30,hour=12,minute=0,second=0))
-        rec_end = tz.localize(datetime(year=2021,month=6,day=30,hour=13,minute=0,second=0))
+        rec_start = tz.localize(datetime(year=2021,month=7,day=3,hour=15,minute=0,second=0))
+        rec_end = tz.localize(datetime(year=2021,month=7,day=3,hour=16,minute=0,second=0))
         oxbow_setpoint = 6.0
         oxbow_current = 0.4
 
@@ -317,7 +323,7 @@ def rec_release(df):
             rampdown_active_alarms = Issued_Alarms.objects.filter(alarm_still_active=True,
                                                                 alarm_trigger="rampdown_oxbow")
             for rampdown_active_alarm in rampdown_active_alarms:
-                Issued_Alarms.objects.fiter(id=rampdown_active_alarm.id).update(alarm_still_active=False)
+                Issued_Alarms.objects.filter(id=rampdown_active_alarm.id).update(alarm_still_active=False)
     return
 
 
@@ -415,5 +421,16 @@ def drop_numerical_outliers(df, meter, z_thresh):
 
 if __name__ == "__main__":
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AbayTracker.settings')
-    main()
-    t1.start(block=True)
+
+    # Capture all errors and alert admin if fails.
+    try:
+        main()
+        t1.start(block=True)
+
+    # An error occurred, alert admin and terminate program.
+    except Exception as e:
+        log_stream = StringIO()
+        logging.basicConfig(stream=log_stream, level=logging.INFO)
+        logging.error("Exception occurred", exc_info=True)
+        send_mail(f"7203750163@mms.att.net", "smotley@mac.com", log_stream.getvalue(), "Pi Checker Crashed")
+        sys.exit()

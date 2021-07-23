@@ -2117,6 +2117,8 @@ html:not([dir=rtl]) .c-switch-label .c-switch-slider::after {
   margin: auto;
 }
 
+
+
 .fail__circle {
   stroke-dasharray: 166;
   stroke-dashoffset: 166;
@@ -2132,6 +2134,12 @@ html:not([dir=rtl]) .c-switch-label .c-switch-slider::after {
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
   animation: stroke .3s .8s forwards;
+}
+
+/* LED Numbers */
+.easXpj{
+  border: none !important;
+  padding: 1px 1px 1px 1px !important;
 }
 
 @keyframes stroke {

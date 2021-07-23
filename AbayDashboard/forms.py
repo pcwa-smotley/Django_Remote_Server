@@ -103,11 +103,11 @@ class AlertForm(forms.ModelForm):
     class Meta:
         model = AlertPrefs
         fields = ("afterbay_hi", "afterbay_lo", "oxbow_deviation",
-                  "r4_lo", "r4_hi", "r11_lo", "r11_hi", "r30_lo", "r30_hi")
+                  "r4_lo", "r4_hi", "r11_lo", "r11_hi", "r30_lo", "r30_hi", "rampup_oxbow", "rampdown_oxbow")
 
     # Order the field so that when it shows up in the template, it displays with the lower value on the left.
     field_order = ["afterbay_lo", "afterbay_hi", "oxbow_deviation",
-                  "r4_lo", "r4_hi", "r11_lo", "r11_hi", "r30_lo", "r30_hi"]
+                  "r4_lo", "r4_hi", "r11_lo", "r11_hi", "r30_lo", "r30_hi", "rampup_oxbow", "rampdown_oxbow"]
 
     def __init__(self, *args, **kwargs):
         super(AlertForm, self).__init__(*args, **kwargs)

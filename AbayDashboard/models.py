@@ -113,7 +113,7 @@ class Recreation_Data(models.Model):
                 "start_hour": 8,
                 "end_hour": 11,
                 "start_hour_weekend": 8,
-                "end_hour_weekend": 12,
+                "end_hour_weekend": 11,
                 "start_end_minute": 00,
                 "start_end_minute_weekend": 30,
             },
@@ -123,7 +123,7 @@ class Recreation_Data(models.Model):
                 "start_hour": 8,
                 "end_hour": 11,
                 "start_hour_weekend": 8,
-                "end_hour_weekend": 12,
+                "end_hour_weekend": 11,
                 "start_end_minute": 00,
                 "start_end_minute_weekend": 30,
             },
@@ -133,7 +133,7 @@ class Recreation_Data(models.Model):
                 "start_hour": 8,
                 "end_hour": 11,
                 "start_hour_weekend": 8,
-                "end_hour_weekend": 12,
+                "end_hour_weekend": 11,
                 "start_end_minute": 00,
                 "start_end_minute_weekend": 30,
             }
@@ -193,7 +193,7 @@ class Recreation_Data(models.Model):
 
         # Save the results to the database
         self.save()
-        return self.today_recStart, self.today_recEnd
+        return self.today_recStart, self.today_recEnd, self.tomorrow_recStart, self.tomorrow_recEnd
 
 
 # Whenever there is a post_save in the User model, run the following code

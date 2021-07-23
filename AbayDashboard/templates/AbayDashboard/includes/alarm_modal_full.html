@@ -113,6 +113,7 @@
                                     <tbody>
                                     <tr>
                                         <th scope="row">Today</th>
+                                        {% timezone "US/Pacific" %}
                                         <td><input class="form-control" name="today_recStart" id="today_recStart" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'today_recStart'|date:"f A"  | default_if_none:"No Rafting Today"}}"></td>
                                         <td><input class="form-control" name="today_recEnd" id="today_recEnd" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'today_recEnd'|date:"f A"  | default_if_none:"No Rafting Today"}}"></td>
 
@@ -123,10 +124,11 @@
                                         <td><input class="form-control" name="tomorrow_recEnd" id="tomorrow_recEnd" type="text" placeholder="Rafting Time" value="{{rec_release_data.fields|get_item:'tomorrow_recEnd'|date:"f A"  | default_if_none:"No Rafting Tomorrow"}}"></td>
                                     </tr>
                                     <tr>
-                                        <th scope="row">Alert Buffer</th>
-                                        <td><input class="form-control" name="rampup_oxbow" id="rampup_oxbow" type="text" placeholder="Rafting Time" value="{{user_alert_data.fields|get_item:'rampup_oxbow'  | default_if_none:"Minutes"}}"></td>
-                                        <td><input class="form-control" name="rampdown_oxbow" id="rampdown_oxbow" type="text" placeholder="Rafting Time" value="{{user_alert_data.fields|get_item:'rampdown_oxbow'  | default_if_none:"Minutes"}}"></td>
+                                        <th scope="row">Minute Buffer</th>
+                                        <td><input class="form-control" name="rampup_oxbow" id="rampup_oxbow" type="text" placeholder="Minutes" value="{{user_alert_data.fields|get_item:'rampup_oxbow'  | default_if_none:""}}"></td>
+                                        <td><input class="form-control" name="rampdown_oxbow" id="rampdown_oxbow" type="text" placeholder="Minutes" value="{{user_alert_data.fields|get_item:'rampdown_oxbow'  | default_if_none:""}}"></td>
                                     </tr>
+                                    {% endtimezone %}
                                     </tbody>
                             </table>
                               <div class="col-sm-10">

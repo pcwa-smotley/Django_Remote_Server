@@ -1,30 +1,29 @@
 import os
 from io import BytesIO
 import dash
-import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-from zipfile import ZipFile
 import copy
 import requests
 from urllib.error import HTTPError, URLError
 from datetime import datetime, timedelta, time, timezone
 import pytz
 import numpy as np
-from django.contrib.staticfiles.storage import staticfiles_storage
 from dash.dependencies import Input, Output, State
 from plotly import graph_objs as go
 from datetime import datetime as dt
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wx.settings')
+django.setup()
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
-import dash_daq as daq
 from scipy import stats
-import json
-#from .dash_abay_extras.layout import top_cards, main_layout
-from .dash_abay_extras.layout_summer import top_cards, second_cards, main_layout
-from ..mailer import send_mail
+from dash_abay_extras.layout_summer import top_cards, second_cards, main_layout
 import psutil
 import logging
+from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recreation_Data
+
 
 # ###To run the app on it's own (not in Django), you would do:
 # app = dash.Dash()
@@ -34,15 +33,15 @@ import logging
 ### Then you'd just run python from the terminal > python dash_first.py
 # app = DjangoDash('UberExample')
 
-# app = dash.Dash(
-#     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width" }],
-#     external_stylesheets=["https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"],
-#     external_scripts=["https://code.jquery.com/jquery-3.5.1.min.js",
-#                       'https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js',
-#                       ]
-# )
-#
-# # app = dash.Dash()
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
+                        'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css',
+                        'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css',
+                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
+                        '../AbayDashboard/static/css/style.css']
+external_javascript = ["https://code.jquery.com/jquery-3.5.1.min.js", "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js",
+                       'https://d3js.org/d3.v5.min.js','https://d3js.org/d3-time.v1.min.js','https://d3js.org/d3-time-format.v2.min.js']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets, external_scripts=external_javascript)
 
 class PiRequest:
     #
@@ -115,15 +114,15 @@ class PiRequest:
         if "Middle Fork" in self.meter_name or "Oxbow" in self.meter_name:
             return "Generation Units"
 
-local = False
+local = True
 if local:
-    app = dash.Dash(
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
-        external_scripts=["https://code.jquery.com/jquery-3.5.1.min.js",
-                          ],
-        suppress_callback_exceptions = True
-    )
-    server = app.server
+    # app = dash.Dash(
+    #     external_stylesheets=[dbc.themes.BOOTSTRAP],
+    #     external_scripts=["https://code.jquery.com/jquery-3.5.1.min.js",
+    #                       ],
+    #     suppress_callback_exceptions = True
+    # )
+    # server = app.server
     df = pd.read_csv("pcwa_locations.csv")
 else:
     app = DjangoDash('dash_django', suppress_callback_exceptions=True, add_bootstrap_links=True)
@@ -527,6 +526,49 @@ def main(meters):
 
         return figure
 
+    @app.callback([Output('rec_d1_stime_led','value'),Output('rec_d2_stime_led','value'),
+                   Output('rec_d1_etime_led', 'value'), Output('rec_d2_etime_led', 'value'),
+                   Output('rec_d1_stime_led', 'color'), Output('rec_d2_stime_led', 'color'),
+                   Output('rec_stime_text','children'), Output('rec_etime_text','children')],
+                  [Input('input_mw_range','value'), Input("cnrfc_switch_span","n_clicks"),])
+    def update_release_time(ox_mw_start, n_clicks):
+        ramp_times = Recreation_Data.objects.all()[0].ramp_times
+        rec_start_today = ramp_times[0]
+        rec_end_today = ramp_times[1]
+        rec_start_tomorrow = ramp_times[2]
+        rec_end_tomorrow = ramp_times[3]
+
+        # Oxbow Ramp Rate in MW/min
+        oxrr = 0.0422
+
+        target_setpoint = 5.4
+
+        mw_to_ramp = target_setpoint - ox_mw_start
+        minutes_to_ramp = int(mw_to_ramp / oxrr)
+
+        # Start assuming the user did not click, and we are viewing the rafting start time, not the call time.
+        lhs_box = "Start Time"
+        rhs_box = "End Time"
+        led_stime_color = "#28A828"
+        led_etime_color = "#28A828"
+        ramp_d1_start = rec_start_today
+        ramp_d2_start = rec_start_tomorrow
+        ramp_d1_end = rec_end_today
+        ramp_d2_end = rec_end_tomorrow
+        if not n_clicks % 2:
+            lhs_box = "Start Ramp Up"
+            ramp_d1_start = (rec_start_today - timedelta(minutes=minutes_to_ramp))
+            ramp_d2_start = (rec_start_tomorrow - timedelta(minutes=minutes_to_ramp))
+
+            # Basically switch the values on the LHS over to the RHS
+            rhs_box = "Rafting Starts"
+            ramp_d1_end = rec_start_today
+            ramp_d2_end = rec_start_tomorrow
+
+            led_stime_color = "#FF5E5E"
+
+        return ramp_d1_start.strftime("%H:%M"), ramp_d2_start.strftime("%H:%M"), ramp_d1_end.strftime("%H:%M"), \
+               ramp_d2_end.strftime("%H:%M"), led_stime_color, led_stime_color, lhs_box, rhs_box
 
     @app.callback(
         [Output('r4sparkline','figure'), Output('r30sparkline','figure'),
@@ -759,12 +801,12 @@ def update_data(meters, rfc_json_data):
     meters = [PiRequest("OPS", "R4", "Flow"), PiRequest("OPS", "R11", "Flow"),
               PiRequest("OPS", "R30", "Flow"), PiRequest("OPS", "Afterbay", "Elevation"),
               PiRequest("OPS", "Afterbay", "Elevation Setpoint"),
-              PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS","R5","Flow"),
-              PiRequest("OPS","Hell Hole","Elevation"),
+              PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS", "R5", "Flow"),
+              PiRequest("OPS", "Hell Hole", "Elevation"),
               PiRequest("Energy_Marketing", None, "GEN_MDFK_and_RA"),
               PiRequest("Energy_Marketing", None, "ADS_MDFK_and_RA"),
               PiRequest("Energy_Marketing", None, "ADS_Oxbow"),
-                ]
+              ]
     for meter in meters:
         try:
             df_meter = pd.DataFrame.from_dict(meter.data)
@@ -1112,13 +1154,75 @@ def abay_forecast(df, df_pi):
     return df
 
 
+def rec_release(df):
+    debugging = False
 
-if __name__ == 'AbayDashboard.dash_apps.dash_abay':
-    # meters = [PiRequest("R4", "Flow"), PiRequest("R11", "Flow"),
-    #           PiRequest("R30", "Flow"), PiRequest("Afterbay", "Elevation"),
-    #           PiRequest("Afterbay", "Elevation Setpoint"),
-    #           PiRequest("Middle Fork", "Power - (with Ralston)"),
-    #           PiRequest("Oxbow", "Power")]
+    # The maximum time (in minutes) a user can be alerted before a ramp up/down is needed. This param is used in
+    # the following for loop, which will start checking if any user wants to be alerted up to 60 minutes
+    # before the ramp.
+    max_buffer = 60
+
+    # The current setpoint
+    oxbow_setpoint = df["Oxbow_Gov_Setpoint"].iloc[df["Oxbow_Gov_Setpoint"].last_valid_index()]
+    oxbow_current = df["Oxbow_Power"].iloc[df["Oxbow_Power"].last_valid_index()]
+
+    target_setpoint = 5.4
+
+    # Oxbow Ramp Rate in MW/min
+    oxrr = 0.0422
+
+    ramp_times = Recreation_Data.objects.all()[0].ramp_times
+    rec_start = ramp_times[0]
+    rec_end = ramp_times[1]
+
+    if debugging:
+        tz = pytz.timezone('US/Pacific')
+        rec_start = tz.localize(datetime(year=2021,month=7,day=3,hour=15,minute=0,second=0))
+        rec_end = tz.localize(datetime(year=2021,month=7,day=3,hour=16,minute=0,second=0))
+        oxbow_setpoint = 6.0
+        oxbow_current = 0.4
+
+    # If rec releases are being made today, ramp_times will exist.
+    if ramp_times[0]:
+        mw_to_ramp = target_setpoint - oxbow_current
+        minutes_to_ramp = int(mw_to_ramp/oxrr)
+        ramp_must_start = rec_start - timedelta(minutes=minutes_to_ramp)
+
+        # The following code will check:
+        # 1) Is the current time + minutes-to-ramp less than the rec release start time
+        #       e.g. Its 7:02 am and it takes 60 minutes to ramp, then it will be 8:02 am when it reaches full release.
+        #            if the rec release starts at 8:00, this would be too late.
+        # 2) Is oxbow set to the desired setpoint.
+        #       e.g. If it's past the time to start ramping, but Oxbow is already set to 6.0 MW, then we're good.
+        # 3) Is it after the end of the rec release time. If so, rafting is done for the day and there's no point
+        #    to check any other criteria.
+        if datetime.now(pytz.timezone('US/Pacific')) + timedelta(minutes=minutes_to_ramp+max_buffer) > rec_start \
+                and oxbow_setpoint < target_setpoint and datetime.now(pytz.timezone('US/Pacific')) < rec_end:
+
+            # The Alert Database has a "trigger_value" field that holds numbers (not datetime). The field
+            # stores a saved value that the user wanted to "trigger" the alarm. Since we're now dealing with times
+            # we will pass the number of minutes needed until the ramp. Those minutes can then be subtracted from
+            # the "trigger_time" field to give us the same answer (the time at which the user wanted to be alerted).
+            tdelta = rec_start-(datetime.now(pytz.timezone('US/Pacific')) + timedelta(minutes=minutes_to_ramp))
+            minutes_until_ramp_starts = int(tdelta.seconds / 60)
+
+            # You are now late: ramp time has already passed. Show how many minutes late by providing negative minutes.
+            # tdelta days is < 0 if it's past the time time start ramping.
+            if tdelta.days < 0:
+                tdelta = timedelta(
+                    days=0,
+                    seconds=(tdelta.days * 60 * 60 * 24 - tdelta.seconds),
+                    microseconds=tdelta.microseconds
+                )
+
+                # provide minutes as a negative value to show we're already past the time to ramp.
+                minutes_until_ramp_starts = int(-1*tdelta.seconds/60)
+
+
+    return
+
+if __name__ == '__main__':
     main(None)
+    app.run_server(debug=True)
 
 
