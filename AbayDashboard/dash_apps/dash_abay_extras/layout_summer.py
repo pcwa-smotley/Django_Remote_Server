@@ -100,10 +100,10 @@ def main_layout(top_row_cards, second_row_cards, locations_types):
 
 def top_cards(df_all, df_hourly_resample):
     ramp_times = Recreation_Data.objects.all()[0].ramp_times
-    rec_start_today = ramp_times[0].strftime("%H:%M")
-    rec_end_today = ramp_times[1].strftime("%H:%M")
-    rec_start_tomorrow = ramp_times[2].strftime("%H:%M")
-    rec_end_tomorrow = ramp_times[3].strftime("%H:%M")
+    rec_start_today = ramp_times[0].strftime("%H:%M") if ramp_times[0] is not None else "88:88"
+    rec_end_today = ramp_times[1].strftime("%H:%M") if ramp_times[1] is not None else "88:88"
+    rec_start_tomorrow = ramp_times[2].strftime("%H:%M") if ramp_times[2] is not None else "88:88"
+    rec_end_tomorrow = ramp_times[3].strftime("%H:%M") if ramp_times[3] is not None else "88:88"
     top_row = dbc.Row([
         # Top Card Columns.
         # Every card in this  column denoted by a classname of: col-md-6 col-xxl-3 mb-3 pr-md-2"
@@ -127,7 +127,7 @@ def top_cards(df_all, df_hourly_resample):
                     # flex-grow-1: the rate at which this will grow relative to other rows...not sure this is needed.
                     dbc.Row([
                         html.Div(
-                            children=[f" Float: {int(df_all['Afterbay_Elevation_Setpoint'].iloc[-1])}'"],
+                            children=[f" Float: {round(float(df_all['Afterbay_Elevation_Setpoint'].iloc[-1]),1)}'"],
                             id="abay_float_txt",
                             style={"position": "absolute",
                                    "left": "25px",
@@ -236,7 +236,7 @@ def top_cards(df_all, df_hourly_resample):
                             children=[
                                 dcc.Input(
                                     type="checkbox",
-                                    id="cnrfc_toggle",
+                                    id="rafting_toggle",
                                     className="c-switch-input",
                                     value="",
                                 ),
@@ -274,7 +274,7 @@ def top_cards(df_all, df_hourly_resample):
                         html.Div(id="Today_Times", className='row h-50 pt-2', children=[
                                      # All columns are auto-sized.
                                      # Column 1 - autosize no margin on left hand side.
-                                     html.Div(f" Today: ", className="col-4 text-size-1 "),
+                                     html.P(f" Today: ", className="col-4 text-size-1 "),
                                      # Column 2 (Pmin value)
                                      html.Div(daq.LEDDisplay(
                                                 id="rec_d1_stime_led",
@@ -294,7 +294,7 @@ def top_cards(df_all, df_hourly_resample):
                                             className='col-4 ml-0'),
 
                         ]),
-                        html.P(id="Tomorrow_Times", className='row h-50 pt-2', children=[
+                        html.Div(id="Tomorrow_Times", className='row h-50 pt-2', children=[
                             # All columns are auto-sized.
                             # Column 1 - autosize no margin on left hand side.
                             html.P(f" Tomorrow: ", className="col-4 text-size-1 "),

@@ -20,11 +20,12 @@ import dash_bootstrap_components as dbc
 import dash_daq as daq
 from scipy import stats
 import json
-#from .dash_abay_extras.layout import top_cards, main_layout
-from .dash_abay_extras.layout_summer import top_cards, second_cards, main_layout
+from .dash_abay_extras.layout_new import top_cards, main_layout, second_cards
+#from .dash_abay_extras.layout_summer import top_cards, second_cards, main_layout
 from ..mailer import send_mail
 import psutil
 import logging
+from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recreation_Data
 
 # ###To run the app on it's own (not in Django), you would do:
 # app = dash.Dash()
@@ -135,7 +136,7 @@ mapbox_access_token = "pk.eyJ1Ijoic21vdGxleSIsImEiOiJuZUVuMnBBIn0.xce7KmFLzFd9PZ
 
 def main(meters):
     logging.basicConfig(filename='abay_err.log', level=logging.DEBUG)
-    logging.info(f"Starting: {datetime.now().strftime('%a, %d %b %p')}")
+    logging.info(f"Starting: {datetime.now().strftime('%a, %d %b %p %H:%M')}")
     # This will store the data for all the PI requests
     df_all, df_cnrfc = update_data(meters, None)
 
@@ -527,6 +528,50 @@ def main(meters):
 
         return figure
 
+    @app.callback([Output('rec_d1_stime_led','value'),Output('rec_d2_stime_led','value'),
+                   Output('rec_d1_etime_led', 'value'), Output('rec_d2_etime_led', 'value'),
+                   Output('rec_d1_stime_led', 'color'), Output('rec_d2_stime_led', 'color'),
+                   Output('rec_stime_text','children'), Output('rec_etime_text','children')],
+                  [Input('input_mw_range','value'), Input("rafting_switch_span","n_clicks"),])
+    def update_release_time(ox_mw_start, n_clicks):
+        ramp_times = Recreation_Data.objects.all()[0].ramp_times
+        rec_start_today = ramp_times[0]
+        rec_end_today = ramp_times[1]
+        rec_start_tomorrow = ramp_times[2]
+        rec_end_tomorrow = ramp_times[3]
+
+        # Oxbow Ramp Rate in MW/min
+        oxrr = 0.0422
+
+        target_setpoint = 5.8
+
+        mw_to_ramp = target_setpoint - ox_mw_start
+        minutes_to_ramp = int(mw_to_ramp / oxrr)
+
+        # Start assuming the user did not click, and we are viewing the rafting start time, not the call time.
+        lhs_box = "Start Time"
+        rhs_box = "End Time"
+        led_stime_color = "#28A828"
+        led_etime_color = "#28A828"
+        ramp_d1_start = rec_start_today
+        ramp_d2_start = rec_start_tomorrow
+        ramp_d1_end = rec_end_today
+        ramp_d2_end = rec_end_tomorrow
+        if not n_clicks % 2:
+            lhs_box = "Ramp Up"
+            ramp_d1_start = (rec_start_today - timedelta(minutes=minutes_to_ramp))
+            ramp_d2_start = (rec_start_tomorrow - timedelta(minutes=minutes_to_ramp))
+
+            # Basically switch the values on the LHS over to the RHS
+            rhs_box = "Rec Starts"
+            ramp_d1_end = rec_start_today
+            ramp_d2_end = rec_start_tomorrow
+
+            led_stime_color = "#FF5E5E"
+
+        return ramp_d1_start.strftime("%H:%M"), ramp_d2_start.strftime("%H:%M"), ramp_d1_end.strftime("%H:%M"), \
+               ramp_d2_end.strftime("%H:%M"), led_stime_color, led_stime_color, lhs_box, rhs_box
+
 
     @app.callback(
         [Output('r4sparkline','figure'), Output('r30sparkline','figure'),
@@ -768,6 +813,9 @@ def update_data(meters, rfc_json_data):
     for meter in meters:
         try:
             df_meter = pd.DataFrame.from_dict(meter.data)
+
+            # There is an issue where PI is reporting a dictionary of data for missing data points.
+            df_meter = df_meter.applymap(lambda x: np.nan if isinstance(x, dict) else x)
 
             # If there was an error getting the data, you will have an empty dataframe, escape for loop
             if df_meter.empty:

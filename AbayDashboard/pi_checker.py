@@ -99,6 +99,9 @@ def main():
             # We only want the "Items" object.
             df_meter = pd.DataFrame.from_dict((j["Items"]))
 
+            # There is an issue where PI is reporting a dictionary of data for missing data points.
+            df_meter = df_meter.applymap(lambda x: np.nan if isinstance(x, dict) else x)
+
             # Convert the Timestamp to a pandas datetime object and convert to Pacific time.
             df_meter.index = pd.to_datetime(df_meter.Timestamp)
             df_meter.index.names = ['index']
