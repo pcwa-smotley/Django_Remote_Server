@@ -849,15 +849,15 @@ def update_data(meters, rfc_json_data):
 
     # PMIN / PMAX Calculations
     const_a = 0.09      # Default is 0.0855.
-    const_b = 0.135422  # Default is 0.138639
+    const_b = 0.135378  # Default is 0.138639
     try:
         df_all["Pmin1"] = const_a*(df_all["R4_Flow"]-df_all["R5_Flow"])
         df_all["Pmin2"] = (-0.14*(df_all["R4_Flow"]-df_all["R5_Flow"])*
                               ((df_all["Hell_Hole_Elevation"]-2536)/(4536-2536)))
         df_all["Pmin"] = df_all[["Pmin1","Pmin2"]].max(axis=1)
 
-        df_all["Pmax1"] = ((const_a+const_b)/const_b)*(124+(const_a*df_all["R4_Flow"]-df_all["R5_Flow"]))
-        df_all["Pmax2"] = ((const_a+const_b)/const_a)*(86-(const_b*df_all["R4_Flow"]-df_all["R5_Flow"]))
+        df_all["Pmax1"] = ((const_a+const_b)/const_b)*124+(const_a*(df_all["R4_Flow"]-df_all["R5_Flow"]))
+        df_all["Pmax2"] = ((const_a+const_b)/const_a)*86-(const_b*(df_all["R4_Flow"]-df_all["R5_Flow"]))
 
         df_all["Pmax"] = df_all[["Pmax1","Pmax2"]].min(axis=1)
 

@@ -684,7 +684,6 @@ def second_cards(df_all, df_hourly_resample):
                                                 zeroline=True,
                                                 showticklabels=False,
                                                 gridcolor='black',
-                                                range=[0, 220]
                                             ),
                                             "yaxis": dict(
                                                 showline=True,  # border
@@ -694,6 +693,7 @@ def second_cards(df_all, df_hourly_resample):
                                                 zeroline=True,
                                                 showticklabels=True,
                                                 gridcolor='black',
+                                                range=[0, 220]
                                             ),
                                             "autosize": True,
                                             "height": 120,  # px
