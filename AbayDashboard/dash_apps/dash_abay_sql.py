@@ -25,7 +25,7 @@ from .dash_abay_extras.layout_new import top_cards, main_layout, second_cards
 from ..mailer import send_mail
 import psutil
 import logging
-from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recreation_Data
+from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recreation_Data, PiData, ForecastData
 
 # ###To run the app on it's own (not in Django), you would do:
 # app = dash.Dash()
@@ -138,7 +138,13 @@ def main(meters):
     logging.basicConfig(filename='abay_err.log', level=logging.DEBUG)
     logging.info(f"Starting: {datetime.now().strftime('%a, %d %b %p %H:%M')}")
     # This will store the data for all the PI requests
-    df_all, df_cnrfc = update_data(meters, None)
+    df_all = pd.DataFrame(list(PiData.objects.all().values()))
+    last_timestamp_age = pd.Timedelta(datetime.now(tz=df_all["Timestamp"].iloc[-1].tzinfo) - df_all["Timestamp"].iloc[-1]).seconds / 60
+
+    if last_timestamp_age > 15:
+        logging.info(f"Is pi_cheker.py running? Data in database is {int(last_timestamp_age) } minutes old. "
+                     f"Pulling new data inside dash_abay_sql. : {datetime.now().strftime('%a, %d %b %p %H:%M')}")
+        df_all, df_cnrfc = update_data(meters, None)
 
     # This is for the abay levels. We're just going to show the data on an hourly basis.
     #
@@ -214,7 +220,9 @@ def main(meters):
                  Input('dummy-rfc-dataframe', 'children')])
     def get_new_data(value, current_rfc_df):
         # Part (1) in description above, update dataframes
-        df_refresh, df_refresh_rfc = update_data(meters, current_rfc_df)
+        #df_refresh, df_refresh_rfc = update_data(meters, current_rfc_df)
+        df_refresh = pd.DataFrame(list(PiData.objects.all().values()))
+        df_refresh_rfc = pd.DataFrame(list(ForecastData.objects.all().values()))
 
         # Part (2) in description above, check all processes running on system
         pi_process = False
@@ -815,7 +823,7 @@ def update_data(meters, rfc_json_data):
             df_meter = pd.DataFrame.from_dict(meter.data)
 
             # There is an issue where PI is reporting a dictionary of data for missing data points.
-            df_meter["Value"] = df_meter["Value"].map(lambda x: np.nan if isinstance(x, dict) else x)
+            df_meter = df_meter.applymap(lambda x: np.nan if isinstance(x, dict) else x)
 
             # If there was an error getting the data, you will have an empty dataframe, escape for loop
             if df_meter.empty:
@@ -938,13 +946,11 @@ def drop_numerical_outliers(df, meter, z_thresh):
         return df
 
     orig_size = df.shape[0]
-    
-    # If nan's exist, this will convert all values to nan and return an empty array.
-    constrains = df.select_dtypes(include=[np.number]).dropna().apply(lambda x: np.abs(stats.zscore(x)) < z_thresh,
-                                                                      result_type='reduce').all()
-    # Drop (inplace) values set to be rejected. The dropna() is to account for any nan's that were removed
-    # above in the constrains array. 
-    df.drop(df.dropna().index[~constrains], inplace=True)
+    constrains = df.select_dtypes(include=[np.number]) \
+        .apply(lambda x: np.abs(stats.zscore(x)) < z_thresh, result_type='reduce') \
+        .all(axis=1)
+    # Drop (inplace) values set to be rejected
+    df.drop(df.index[~constrains], inplace=True)
 
     if df.shape[0] != orig_size:
         print(f"A total of {orig_size - df.shape[0]} data spikes detected in {meter.meter_name}. "
@@ -1163,7 +1169,7 @@ def abay_forecast(df, df_pi):
 
 
 
-if __name__ == 'AbayDashboard.dash_apps.dash_abay':
+if __name__ == 'AbayDashboard.dash_apps.dash_abay_sql':
     # meters = [PiRequest("R4", "Flow"), PiRequest("R11", "Flow"),
     #           PiRequest("R30", "Flow"), PiRequest("Afterbay", "Elevation"),
     #           PiRequest("Afterbay", "Elevation Setpoint"),

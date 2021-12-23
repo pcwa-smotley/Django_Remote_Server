@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDataSourceStorage">
+    <option name="dataSources">
+      <list>
+        <State>
+          <option name="id" value="af8200ed-89d5-40ac-b6eb-ab6f1f93ce83" />
+          <option name="name" value="db [2]" />
+          <option name="urls">
+            <array>
+              <option value="file://$PROJECT_DIR$/AbayDashboard/db.sqlite3" />
+            </array>
+          </option>
+        </State>
+      </list>
+    </option>
+  </component>
+</project>

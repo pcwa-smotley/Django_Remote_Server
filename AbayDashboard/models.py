@@ -196,6 +196,71 @@ class Recreation_Data(models.Model):
         return self.today_recStart, self.today_recEnd, self.tomorrow_recStart, self.tomorrow_recEnd
 
 
+class PiData(models.Model):
+    # This class is used to hold the PI Data being read from pi_checker.py
+    # The idea here is that pi_checker will replace this table every time it pulls data, and our app will then
+    # read from this table rather than ping pi_web every time it runs. This should be much faster.
+    # If an item is not listed below in the table, that means:
+    # 1) It can still be in the SQL table, but only if it's written by .to_sql(_) in pandas
+    # 2) If it's not listed, it will not be found in a call to all objects, e.g. PiData.objects.all() will not contain
+    #    a column for the item if it's not listed below.
+    class Meta:
+        db_table = 'pi_data'
+        managed = False
+    id = models.AutoField(primary_key=True)
+    Timestamp = models.DateTimeField(null=True, default=None)
+    R4_Flow = models.FloatField(null=True, default=None)
+    R5_Flow = models.FloatField(null=True, default=None)
+    R11_Flow = models.FloatField(null=True, default=None)
+    R30_Flow = models.FloatField(null=True, default=None)
+    UnitsAbbreviation = models.TextField(null=True, default=None)
+    Afterbay_Elevation = models.FloatField(null=True, default=None)
+    Afterbay_Elevation_Setpoint = models.FloatField(null=True, default=None)
+    Oxbow_Gov_Setpoint = models.FloatField(null=True, default=None)
+    Oxbow_Power = models.FloatField(null=True, default=None)
+    Hell_Hole_Elevation = models.FloatField(null=True, default=None)
+    GEN_MDFK_and_RA = models.FloatField(null=True, default=None)
+    ADS_MDFK_and_RA = models.FloatField(null=True, default=None)
+    ADS_Oxbow = models.FloatField(null=True, default=None)
+    Pmin = models.FloatField(null=True, default=None)
+    Pmax = models.FloatField(null=True, default=None)
+
+
+class ForecastData(models.Model):
+    class Meta:
+        db_table = 'forecast_data'
+        managed = False
+
+    index = models.AutoField(primary_key=True)
+    FORECAST_ISSUED = models.DateTimeField(null=True, default=None)
+    GMT = models.DateTimeField(null=True, default=None)
+    R4_fcst = models.FloatField(null=True, default=None)
+    R30_fcst = models.FloatField(null=True, default=None)
+    R11_fcst = models.FloatField(null=True, default=None)
+    R20_fcst = models.FloatField(null=True, default=None)
+    # MFRA_fcst = models.FloatField(null=True, default=None)
+    # Pmin = models.FloatField(null=True, default=None)
+    # Pmax = models.FloatField(null=True, default=None)
+    # Abay_AF_Observed = models.FloatField(null=True, default=None)
+    # Abay_AF_Change_Observed = models.FloatField(null=True, default=None)
+    # RA_MW = models.FloatField(null=True, default=None)
+    # MF_MW = models.FloatField(null=True, default=None)
+    # Oxbow_fcst = models.FloatField(null=True, default=None)
+    # Oxbow_Outflow = models.FloatField(null=True, default=None)
+    # R5_Value = models.FloatField(null=True, default=None)
+    # RA_Inflow = models.FloatField(null=True, default=None)
+    # MF_Inflow = models.FloatField(null=True, default=None)
+    # Ibay_Spill = models.FloatField(null=True, default=None)
+    # R20_fcst_adjusted = models.FloatField(null=True, default=None)
+    # Abay_Inflow = models.FloatField(null=True, default=None)
+    # Abay_Outflow = models.FloatField(null=True, default=None)
+    # Abay_AF_Change = models.FloatField(null=True, default=None)
+    # Abay_AF_Change_Error = models.FloatField(null=True, default=None)
+    # Abay_CFS_Error = models.FloatField(null=True, default=None)
+    # Abay_AF_Fcst = models.FloatField(null=True, default=None)
+    # Abay_Elev_Fcst = models.FloatField(null=True, default=None)
+
+
 # Whenever there is a post_save in the User model, run the following code
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

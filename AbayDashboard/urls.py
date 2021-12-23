@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.urls import path
 from . import views
-from .dash_apps import dash_abay
+from .dash_apps import dash_abay_sql
 
 app_name = "AbayDashboard"
 
