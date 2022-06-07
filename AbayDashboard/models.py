@@ -50,7 +50,7 @@ class Issued_Alarms(models.Model):
 
 
 class Recreation_Data(models.Model):
-    water_year_type=models.TextField(null=True,default="above_normal")
+    water_year_type = models.TextField(null=True,default="above_normal")
     today_recStart = models.DateTimeField(null=True, default=None)
     today_recEnd = models.DateTimeField(null=True, default=None)
     tomorrow_recStart = models.DateTimeField(null=True, default=None)

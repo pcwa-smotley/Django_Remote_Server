@@ -110,7 +110,7 @@ def top_cards(df_all, df_hourly_resample):
             # ABAY CARD class of h-md-100 which means height on medium screens of 100%
             dbc.Card([
                 dbc.CardHeader(f"Abay - "
-                               f"Elev: {round(df_all['Afterbay_Elevation'].iloc[-1], 1)}"),
+                               f"Elev: {round(df_all['Afterbay_Elevation'].dropna().iloc[-1], 1)}"),
                 # f" Updated: {(df_all['Timestamp'].iloc[-1]).strftime('%b %d, %H:%M %p')}"),
                 # ABAY CARD BODY has ONE row and TWO columns.
                 # The body class is: d-flex aligh-items-end
@@ -121,7 +121,7 @@ def top_cards(df_all, df_hourly_resample):
                     # flex-grow-1: the rate at which this will grow relative to other rows...not sure this is needed.
                     dbc.Row([
                         html.Div(
-                            children=[f" Float: {int(df_all['Afterbay_Elevation_Setpoint'].iloc[-1])}'"],
+                            children=[f" Float: {int(df_all['Afterbay_Elevation_Setpoint'].dropna().iloc[-1])}'"],
                             id="abay_float_txt",
                             style={"position": "absolute",
                                    "left": "25px",
@@ -131,7 +131,7 @@ def top_cards(df_all, df_hourly_resample):
                             daq.Tank(
                                 id='my-tank2',
                                 className='dark-theme-control',
-                                value=round(df_all["Afterbay_Elevation"].iloc[-1], 1),
+                                value=round(df_all["Afterbay_Elevation"].dropna().iloc[-1], 1),
                                 min=1165,
                                 height=110,  # Required! This is based off of a top-row height of 200px.
                                 max=df_all["Afterbay_Elevation_Setpoint"].values.max(),
@@ -251,7 +251,7 @@ def top_cards(df_all, df_hourly_resample):
                             dbc.Col(
                                 daq.LEDDisplay(
                                     size=20,
-                                    value=int(df_all["R4_Flow"].iloc[-1]),
+                                    value=int(df_all["R4_Flow"].dropna().iloc[-1]),
                                     color="#FF5E5E",
                                     backgroundColor="#343a40"
                                 ),
@@ -323,7 +323,7 @@ def top_cards(df_all, df_hourly_resample):
                         dbc.Col(
                             daq.LEDDisplay(
                                 size=20,
-                                value=int(df_all["R30_Flow"].iloc[-1]),
+                                value=int(df_all["R30_Flow"].dropna().iloc[-1]),
                                 color="#FF5E5E",
                                 backgroundColor="#343a40"
                             ), width=3
@@ -384,7 +384,7 @@ def second_cards(df_all, df_hourly_resample):
                             dbc.Col(children=[
                                         daq.LEDDisplay(
                                         size=20,
-                                        value=round(df_all["Afterbay_Elevation"].iloc[-1], 1),
+                                        value=round(df_all["Afterbay_Elevation"].dropna().iloc[-1], 1),
                                         color="#FF5E5E",
                                         backgroundColor="#343a40"
                                         ),
@@ -491,7 +491,7 @@ def second_cards(df_all, df_hourly_resample):
                             dbc.Col(children=[
                                 daq.LEDDisplay(
                                     size=20,
-                                    value=round(df_all["Oxbow_Power"].iloc[-1], 1),
+                                    value=round(df_all["Oxbow_Power"].dropna().iloc[-1], 1),
                                     color="#FF5E5E",
                                     backgroundColor="#343a40"
                                 ),
@@ -598,7 +598,7 @@ def second_cards(df_all, df_hourly_resample):
                             dbc.Col(children=[
                                 daq.LEDDisplay(
                                     size=20,
-                                    value=round(df_all["GEN_MDFK_and_RA"].iloc[-1], 1),
+                                    value=round(df_all["GEN_MDFK_and_RA"].dropna().iloc[-1], 1),
                                     color="#FF5E5E",
                                     backgroundColor="#343a40"
                                 ),
@@ -644,12 +644,12 @@ def second_cards(df_all, df_hourly_resample):
                                         # Column 1 - autosize no margin on left hand side.
                                         html.Div(f" Pmin: ", className="col-auto ml-0 text-size-1"),
                                         # Column 2 (Pmin value)
-                                        html.Div(round(df_all["Pmin"].iloc[-1], 1),
+                                        html.Div(round(df_all["Pmin"].dropna().iloc[-1], 1),
                                             className='col-auto badge badge-success text-size-1 text-monospace ml-0'),
                                         # Column 3 (Pmax text)
                                         html.Div(f" Pmax: ", className="col-auto ml-2 text-size-1"),
                                         # Col 4 (Pmax value)
-                                        html.Div(round(df_all["Pmax"].iloc[-1], 1),
+                                        html.Div(round(df_all["Pmax"].dropna().iloc[-1], 1),
                                             className='col-auto badge badge-success text-size-1 text-monospace ml-0'),
                                     ]
                                  ),

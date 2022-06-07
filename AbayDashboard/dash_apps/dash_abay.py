@@ -20,8 +20,8 @@ import dash_bootstrap_components as dbc
 import dash_daq as daq
 from scipy import stats
 import json
-from .dash_abay_extras.layout_new import top_cards, main_layout, second_cards
-#from .dash_abay_extras.layout_summer import top_cards, second_cards, main_layout
+#from .dash_abay_extras.layout_new import top_cards, main_layout, second_cards
+from .dash_abay_extras.layout_summer import top_cards, second_cards, main_layout
 from ..mailer import send_mail
 import psutil
 import logging
@@ -46,12 +46,12 @@ from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recre
 # # app = dash.Dash()
 
 class PiRequest:
-    #
     # https://flows.pcwa.net/piwebapi/assetdatabases/D0vXCmerKddk-VtN6YtBmF5A8lsCue2JtEm2KAZ4UNRKIwQlVTSU5FU1NQSTJcT1BT/elements
-    def __init__(self, db, meter_name, attribute, forecast=False):
-        self.db = db  # Database (e.g. "Energy Marketing," "OPS")
-        self.meter_name = meter_name  # R4, Afterbay, Ralston
-        self.attribute = attribute  # Flow, Elevation, Lat, Lon, Storage, Elevation Setpoint, Gate 1 Position, Generation
+    def __init__(self, db, meter_name, attribute, monitor_for_alerts=True, forecast=False):
+        self.db = db                                        # Database (e.g. "Energy Marketing," "OPS")
+        self.meter_name = meter_name                        # R4, Afterbay, Ralston
+        self.monitor_for_alerts = monitor_for_alerts        # Is this a meter that can trigger an alert
+        self.attribute = attribute                          # Flow, Elevation, Lat, Lon, Storage, Elevation Setpoint, Gate 1 Position, Generation
         self.baseURL = 'https://flows.pcwa.net/piwebapi/attributes'
         self.forecast = forecast
         self.meter_element_type = self.meter_element_type()  # Gauging Stations, Reservoirs, Generation Units
@@ -97,18 +97,18 @@ class PiRequest:
                         "interval": "1m",
                         },
             )
-            print(f'Response HTTP Status Code: {response.status_code} for {self.meter_name} | {self.attribute}')
+            #print(f'Response HTTP Status Code: {response.status_code} for {self.meter_name} | {self.attribute}')
             j = response.json()
             # We only want the "Items" object.
             return j["Items"]
         except requests.exceptions.RequestException:
             logging.warning(f"HTTP Failed For {self.meter_name} | {self.attribute}")
-            print('HTTP Request failed')
+            print(f"HTTP Failed For {self.meter_name} | {self.attribute}")
             return None
 
     def meter_element_type(self):
         if not self.meter_name:
-            return None
+            return "Energy Marketing Tag"
         if self.attribute == "Flow":
             return "Gauging Stations"
         if "Afterbay" in self.meter_name or "Hell Hole" in self.meter_name:
@@ -806,9 +806,9 @@ def update_data(meters, rfc_json_data):
               PiRequest("OPS", "Afterbay", "Elevation Setpoint"),
               PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS","R5","Flow"),
               PiRequest("OPS","Hell Hole","Elevation"),
-              PiRequest("Energy_Marketing", None, "GEN_MDFK_and_RA"),
-              PiRequest("Energy_Marketing", None, "ADS_MDFK_and_RA"),
-              PiRequest("Energy_Marketing", None, "ADS_Oxbow"),
+              PiRequest("Energy_Marketing", "MFP_Total_Gen", "GEN_MDFK_and_RA"),
+              PiRequest("Energy_Marketing", "MFP_ADS", "ADS_MDFK_and_RA"),
+              PiRequest("Energy_Marketing", "Ox_ADS", "ADS_Oxbow"),
                 ]
     for meter in meters:
         try:

@@ -7,7 +7,6 @@ Purpose: This program loops every x minutes to download and store PI data. It wi
     2) get_cnrfc_data(): a) Runs every 30 minutes, will download cnrfc data from website and store it on our server.
                          b) Then it will initiate abay_forecast() and update the SQL forecast_data table.
 '''
-
 import os
 import sys
 import platform
@@ -18,6 +17,7 @@ import logging
 from io import StringIO
 from urllib.error import HTTPError, URLError
 import smtplib
+
 if "Linux" in platform.platform(terse=True):
     sys.path.append("/var/www/wx/")
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wx.settings')
@@ -33,6 +33,10 @@ import numpy as np
 from mailer import send_mail
 import pytz
 import sqlite3
+
+__version__ = "1.0.1"
+__author__ = "Shane Motley"
+__copyright__ = "Copyright 2022, PCWA"
 
 t1 = Timeloop()
 
@@ -99,7 +103,7 @@ class PiRequest:
 
     def meter_element_type(self):
         if not self.meter_name:
-            return None
+            return "Energy Marketing Tag"
         if self.attribute == "Flow":
             return "Gauging Stations"
         if "Afterbay" in self.meter_name or "Hell Hole" in self.meter_name:
@@ -116,9 +120,9 @@ def main():
               PiRequest("OPS", "Afterbay", "Elevation Setpoint"), PiRequest("OPS", "Oxbow", "Gov Setpoint"),
               PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS", "R5", "Flow", False, False),
               PiRequest("OPS", "Hell Hole", "Elevation", False, False),
-              PiRequest("Energy_Marketing", None, "GEN_MDFK_and_RA"),
-              PiRequest("Energy_Marketing", None, "ADS_MDFK_and_RA"),
-              PiRequest("Energy_Marketing", None, "ADS_Oxbow"),
+              PiRequest("Energy_Marketing", "MFP_Total_Gen", "GEN_MDFK_and_RA"),
+              PiRequest("Energy_Marketing", "MFP_ADS", "ADS_MDFK_and_RA"),
+              PiRequest("Energy_Marketing", "Ox_ADS", "ADS_Oxbow"),
               ]
     df_all = pd.DataFrame()
     for meter in meters:
@@ -143,8 +147,8 @@ def main():
             # Rename the column (this was needed if we wanted to merge all the Value columns into a dataframe)
             renamed_col = (f"{meter.meter_name}_{meter.attribute}").replace(' ', '_')
 
-            # For attributes in the Energy Marketing folder, the name is "None", so just use attribute
-            if meter.meter_name is None:
+            # For attributes in the Energy Marketing folder, just use attribute
+            if meter.db == 'Energy_Marketing':
                 renamed_col = (f"{meter.attribute}").replace(' ', '_')
 
             df_meter.rename(columns={"Value": f"{renamed_col}"}, inplace=True)
@@ -341,7 +345,7 @@ def rec_release(df):
             minutes_until_ramp_starts = int(tdelta.seconds / 60)
 
             # You are now late: ramp time has already passed. Show how many minutes late by providing negative minutes.
-            # tdelta days is < 0 if it's past the time time start ramping.
+            # tdelta days is < 0 if it's past the time to start ramping.
             if tdelta.days < 0:
                 tdelta = timedelta(
                     days=0,
@@ -744,7 +748,6 @@ def get_cnrfc_data():
             most_recent_file = file  # The date last file successfully pulled.
         except (HTTPError, URLError) as error:
             logging.warning(f'CNRFC HTTP Request failed {error} for {file}. Error code: {error}')
-            print(f'CNRFC HTTP Request failed {error} for {file}')
             continue
 
     # The last element in the list will be the most current forecast. Get that one.
@@ -829,18 +832,21 @@ def create_table():
 
 if __name__ == "__main__":
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AbayTracker.settings')
+    log_stream = StringIO()
+    logging.basicConfig(level=logging.INFO, handlers=[
+        logging.FileHandler("pi_checker_err.log"),
+        logging.StreamHandler()
+    ])
 
     # Capture all errors and alert admin if fails.
     try:
+        print(f"Running pi_checker version: {__version__}")
         main()
         get_cnrfc_data()
         t1.start(block=True)
 
-
     # An error occurred, alert admin and terminate program.
     except Exception as e:
-        log_stream = StringIO()
-        logging.basicConfig(stream=log_stream, level=logging.INFO)
         logging.error("Exception occurred", exc_info=True)
         print(log_stream.getvalue())
         send_mail(f"7203750163@mms.att.net", "smotley@mac.com", log_stream.getvalue(), "Pi Checker Crashed")
