@@ -14,8 +14,9 @@ Method: All data obtained from CDEC, with two data pulls occurring on every run.
 
 from plotly import graph_objs as go
 import dash
-import dash_html_components as html
-import dash_core_components as dcc
+from dash import html, dcc
+#import dash_html_components as html
+#import dash_core_components as dcc
 import os
 from calendar import monthrange
 from plotly.subplots import make_subplots

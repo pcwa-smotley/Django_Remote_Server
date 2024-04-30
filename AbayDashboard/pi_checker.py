@@ -111,100 +111,119 @@ class PiRequest:
         if "Middle Fork" in self.meter_name or "Oxbow" in self.meter_name:
             return "Generation Units"
 
+class CustomException(Exception):
+    def __init__(self, message="An error occurred; pi_checker has crashed."):
+        self.message = message
+        super().__init__(self.message)
+
 
 @t1.job(interval=timedelta(minutes=1))
+#@shared_task()
 def main():
-    print("Current Time in PDT is: ", datetime.now(tz=pytz.timezone('US/Pacific')).strftime("%a %H:%M:%S %p"))
-    meters = [PiRequest("OPS", "R4", "Flow"), PiRequest("OPS", "R11", "Flow"),
-              PiRequest("OPS", "R30", "Flow"), PiRequest("OPS", "Afterbay", "Elevation"),
-              PiRequest("OPS", "Afterbay", "Elevation Setpoint"), PiRequest("OPS", "Oxbow", "Gov Setpoint"),
-              PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS", "R5", "Flow", False, False),
-              PiRequest("OPS", "Hell Hole", "Elevation", False, False),
-              PiRequest("Energy_Marketing", "MFP_Total_Gen", "GEN_MDFK_and_RA"),
-              PiRequest("Energy_Marketing", "MFP_ADS", "ADS_MDFK_and_RA"),
-              PiRequest("Energy_Marketing", "Ox_ADS", "ADS_Oxbow"),
-              ]
-    df_all = pd.DataFrame()
-    for meter in meters:
-        # Now that we have the url for the PI data, this request is for the actual data. We will
-        # download data from the beginning of the water year to the current date. (We can't download data
-        # past today's date, if we do we'll get an error.
-        try:
-            df_meter = pd.DataFrame.from_dict(meter.data)
-
-            # There is an issue where PI is reporting a dictionary of data for missing data points.
-            df_meter["Value"] = df_meter["Value"].map(lambda x: np.nan if isinstance(x, dict) else x)
-
-            # Convert the Timestamp to a pandas datetime object and convert to Pacific time.
-            df_meter.index = pd.to_datetime(df_meter.Timestamp)
-            df_meter.index.names = ['index']
-
-            # Remove any outliers or data spikes
-            try:
-                df_meter = drop_numerical_outliers(df_meter, meter, z_thresh=3)
-            except ValueError as e:
-                print("Unable to drop outliers", e)
-            # Rename the column (this was needed if we wanted to merge all the Value columns into a dataframe)
-            renamed_col = (f"{meter.meter_name}_{meter.attribute}").replace(' ', '_')
-
-            # For attributes in the Energy Marketing folder, just use attribute
-            if meter.db == 'Energy_Marketing':
-                renamed_col = (f"{meter.attribute}").replace(' ', '_')
-
-            df_meter.rename(columns={"Value": f"{renamed_col}"}, inplace=True)
-
-            # This part is not longer needed.
-            if df_all.empty:
-                df_all = df_meter
-            else:
-                df_all = pd.merge(df_all, df_meter[["Timestamp", renamed_col]], on="Timestamp", how='outer')
-                # Convert the Timestamp to a pandas datetime object and convert to Pacific time.
-                df_all.index = pd.to_datetime(df_all.Timestamp)
-                df_all.index.names = ['index']
-
-            # Check to see if a new alarm needed, only check over the 60 minutes.
-            df_last_hour = df_all[df_all.index > df_all.index.max() - pd.Timedelta(hours=1)]
-            if meter.monitor_for_alerts:
-                alarm_checker(meter, df_last_hour, renamed_col)
-
-        except (requests.exceptions.RequestException, KeyError):
-            print('HTTP Request failed')
-            return None
-
-    # PMIN / PMAX Calculations
-    const_a = 0.09  # Default is 0.0855.
-    const_b = 0.135378  # Default is 0.138639
     try:
-        df_all["Pmin1"] = const_a * (df_all["R4_Flow"] - df_all["R5_Flow"])
-        df_all["Pmin2"] = (-0.14 * (df_all["R4_Flow"] - df_all["R5_Flow"]) *
-                           ((df_all["Hell_Hole_Elevation"] - 2536) / (4536 - 2536)))
-        df_all["Pmin"] = df_all[["Pmin1", "Pmin2"]].max(axis=1)
+        print("Current Time in PDT is: ", datetime.now(tz=pytz.timezone('US/Pacific')).strftime("%a %H:%M:%S %p"))
+        meters = [PiRequest("OPS", "R4", "Flow"), PiRequest("OPS", "R11", "Flow"),
+                  PiRequest("OPS", "R30", "Flow"), PiRequest("OPS", "Afterbay", "Elevation"),
+                  PiRequest("OPS", "Afterbay", "Elevation Setpoint"), PiRequest("OPS", "Oxbow", "Gov Setpoint"),
+                  PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS", "R5", "Flow", False, False),
+                  PiRequest("OPS", "Hell Hole", "Elevation", False, False),
+                  PiRequest("Energy_Marketing", "MFP_Total_Gen", "GEN_MDFK_and_RA"),
+                  PiRequest("Energy_Marketing", "MFP_ADS", "ADS_MDFK_and_RA"),
+                  PiRequest("Energy_Marketing", "Ox_ADS", "ADS_Oxbow"),
+                  ]
+        df_all = pd.DataFrame()
+        for meter in meters:
+            # Now that we have the url for the PI data, this request is for the actual data. We will
+            # download data from the beginning of the water year to the current date. (We can't download data
+            # past today's date, if we do we'll get an error.
+            try:
+                df_meter = pd.DataFrame.from_dict(meter.data)
 
-        df_all["Pmax1"] = ((const_a + const_b) / const_b) * 124 + (
-                    const_a * (df_all["R4_Flow"] - df_all["R5_Flow"]))
-        df_all["Pmax2"] = ((const_a + const_b) / const_a) * 86 - (const_b * (df_all["R4_Flow"] - df_all["R5_Flow"]))
+                # There is an issue where PI is reporting a dictionary of data for missing data points.
+                df_meter["Value"] = df_meter["Value"].map(lambda x: np.nan if isinstance(x, dict) else x)
 
-        df_all["Pmax"] = df_all[["Pmax1", "Pmax2"]].min(axis=1)
+                # Convert the Timestamp to a pandas datetime object and convert to Pacific time.
+                df_meter.index = pd.to_datetime(df_meter.Timestamp)
+                df_meter.index.names = ['index']
 
-        df_all.drop(["Pmin1", "Pmin2", "Pmax1", "Pmax2"], axis=1, inplace=True)
-    except ValueError as e:
-        print("Can Not Calculate Pmin or Pmax")
-        df_all[["Pmin", "Pmax"]] = np.nan
-        logging.info(f"Unable to caluclate Pmin or Pmax {e}")
+                # Remove any outliers or data spikes
+                try:
+                    df_meter = drop_numerical_outliers(df_meter, meter, z_thresh=3)
+                except ValueError as e:
+                    print("Unable to drop outliers", e)
+                # Rename the column (this was needed if we wanted to merge all the Value columns into a dataframe)
+                renamed_col = (f"{meter.meter_name}_{meter.attribute}").replace(' ', '_')
 
-    DB_PATH = settings.DATABASES['default']['NAME']
-    CONN = sqlite3.connect(DB_PATH, check_same_thread=False)
-    df_all.drop(["Good", "Questionable", "Substituted", "Annotated"], axis=1, inplace=True)
+                # For attributes in the Energy Marketing folder, just use attribute
+                if meter.db == 'Energy_Marketing':
+                    renamed_col = (f"{meter.attribute}").replace(' ', '_')
 
-    # A requirement of django is to have a column named ID or a primary key. ID will serve that purpose.
-    df_all.reset_index(inplace=True, drop=True)
-    df_all['id'] = df_all.index
-    df_all.to_sql("pi_data", CONN, if_exists='replace', index=False)
+                df_meter.rename(columns={"Value": f"{renamed_col}"}, inplace=True)
 
-    CONN.close()
-    # Email / Text any alerts that may be needed.
-    send_alerts()
-    return
+                # This part is not longer needed.
+                if df_all.empty:
+                    df_all = df_meter
+                else:
+                    df_all = pd.merge(df_all, df_meter[["Timestamp", renamed_col]], on="Timestamp", how='outer')
+                    # Convert the Timestamp to a pandas datetime object and convert to Pacific time.
+                    df_all.index = pd.to_datetime(df_all.Timestamp)
+                    df_all.index.names = ['index']
+
+                # Check to see if a new alarm needed, only check over the 60 minutes.
+                df_last_hour = df_all[df_all.index > df_all.index.max() - pd.Timedelta(hours=1)]
+
+                # If we're monitoring for alerts and the list is not empty, check for alerts.
+                if meter.monitor_for_alerts and df_last_hour[renamed_col].dropna().values.size > 0:
+                    alarm_checker(meter, df_last_hour, renamed_col)
+
+            except (requests.exceptions.RequestException, KeyError):
+                print('HTTP Request failed')
+                return None
+
+        # PMIN / PMAX Calculations
+        const_a = 0.09  # Default is 0.0855.
+        const_b = 0.135378  # Default is 0.138639
+        try:
+            df_all["Pmin1"] = const_a * (df_all["R4_Flow"] - df_all["R5_Flow"])
+            df_all["Pmin2"] = (-0.14 * (df_all["R4_Flow"] - df_all["R5_Flow"]) *
+                               ((df_all["Hell_Hole_Elevation"] - 2536) / (4536 - 2536)))
+            df_all["Pmin"] = df_all[["Pmin1", "Pmin2"]].max(axis=1)
+
+            df_all["Pmax1"] = ((const_a + const_b) / const_b) * 124 + (
+                        const_a * (df_all["R4_Flow"] - df_all["R5_Flow"]))
+            df_all["Pmax2"] = ((const_a + const_b) / const_a) * 86 - (const_b * (df_all["R4_Flow"] - df_all["R5_Flow"]))
+
+            df_all["Pmax"] = df_all[["Pmax1", "Pmax2"]].min(axis=1)
+
+            df_all.drop(["Pmin1", "Pmin2", "Pmax1", "Pmax2"], axis=1, inplace=True)
+        except ValueError as e:
+            print("Can Not Calculate Pmin or Pmax")
+            df_all[["Pmin", "Pmax"]] = np.nan
+            logging.info(f"Unable to caluclate Pmin or Pmax {e}")
+
+        DB_PATH = settings.DATABASES['default']['NAME']
+        CONN = sqlite3.connect(DB_PATH, check_same_thread=False)
+        df_all.drop(["Good", "Questionable", "Substituted", "Annotated"], axis=1, inplace=True)
+
+        # A requirement of django is to have a column named ID or a primary key. ID will serve that purpose.
+        df_all.reset_index(inplace=True, drop=True)
+        df_all['id'] = df_all.index
+        df_all.to_sql("pi_data", CONN, if_exists='replace', index=False)
+
+        CONN.close()
+        # Email / Text any alerts that may be needed.
+        send_alerts()
+        return
+        # An error occurred, alert admin and terminate program.
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
+        print(log_stream.getvalue())
+        send_mail(f"7203750163@mms.att.net", "smotley@mac.com", log_stream.getvalue(), "Pi Checker Crashed")
+        raise CustomException("An error occurred in main function")
+        sys.exit(1)
+    finally:
+        # Close the log stream
+        log_stream.close()  # Close the log stream
 
 
 def alarm_checker(meter, df, column_name):
@@ -700,6 +719,7 @@ def abay_forecast(df_cnrfc):
 
 
 @t1.job(interval=timedelta(minutes=30))
+#@shared_task()
 def get_cnrfc_data():
     new_df = pd.DataFrame(columns = [f.name for f in ForecastData._meta.get_fields()])
     ######################   CNRFC SECTION ######################################
@@ -747,7 +767,7 @@ def get_cnrfc_data():
             df_cnrfc_list.append(df_file)
             most_recent_file = file  # The date last file successfully pulled.
         except (HTTPError, URLError) as error:
-            logging.warning(f'CNRFC HTTP Request failed {error} for {file}. Error code: {error}')
+            #logging.warning(f'CNRFC HTTP Request failed {error} for {file}. Error code: {error}')
             continue
 
     # The last element in the list will be the most current forecast. Get that one.
@@ -846,8 +866,10 @@ if __name__ == "__main__":
         t1.start(block=True)
 
     # An error occurred, alert admin and terminate program.
-    except Exception as e:
-        logging.error("Exception occurred", exc_info=True)
-        print(log_stream.getvalue())
-        send_mail(f"7203750163@mms.att.net", "smotley@mac.com", log_stream.getvalue(), "Pi Checker Crashed")
-        sys.exit()
+    except CustomException as e:
+        print(e)
+        sys.exit(1)  # Use os._exit to terminate all threads
+    finally:
+        # Close the log stream
+        log_stream.close()  # Close the log stream
+

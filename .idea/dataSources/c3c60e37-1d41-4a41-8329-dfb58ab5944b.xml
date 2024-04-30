@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataSource name="db">
-  <database-model serializer="dbm" dbms="SQLITE" family-id="SQLITE" format-version="4.32">
-    <root id="1">
-      <ServerVersion>3.34.0</ServerVersion>
-    </root>
+  <database-model serializer="dbm" dbms="SQLITE" family-id="SQLITE" format-version="4.52">
+    <root id="1"/>
     <collation id="2" parent="1" name="BINARY"/>
     <collation id="3" parent="1" name="NOCASE"/>
     <collation id="4" parent="1" name="RTRIM"/>
@@ -1357,57 +1355,57 @@
       <System>1</System>
     </table>
     <column id="511" parent="491" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="512" parent="491" name="afterbay_hi">
-      <DataType>real|0s</DataType>
+      <DasType>real|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="513" parent="491" name="afterbay_lo">
-      <DataType>real|0s</DataType>
+      <DasType>real|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="514" parent="491" name="oxbow_deviation">
-      <DataType>real|0s</DataType>
+      <DasType>real|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="515" parent="491" name="r4_hi">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="516" parent="491" name="r4_lo">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>6</Position>
     </column>
     <column id="517" parent="491" name="r30_hi">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>7</Position>
     </column>
     <column id="518" parent="491" name="r30_lo">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>8</Position>
     </column>
     <column id="519" parent="491" name="r11_hi">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>9</Position>
     </column>
     <column id="520" parent="491" name="r11_lo">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>10</Position>
     </column>
     <column id="521" parent="491" name="user_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>11</Position>
     </column>
     <column id="522" parent="491" name="rampdown_oxbow">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>12</Position>
     </column>
     <column id="523" parent="491" name="rampup_oxbow">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>13</Position>
     </column>
     <foreign-key id="524" parent="491">
@@ -1419,48 +1417,48 @@
     </foreign-key>
     <index id="525" parent="491" name="AbayDashboard_alertprefs_user_id_ac124860">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="526" parent="491">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="527" parent="492" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="528" parent="492" name="alarm_trigger">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="529" parent="492" name="alarm_setpoint">
-      <DataType>real|0s</DataType>
+      <DasType>real|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="530" parent="492" name="trigger_value">
-      <DataType>real|0s</DataType>
+      <DasType>real|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="531" parent="492" name="trigger_time">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="532" parent="492" name="alarm_sent">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <Position>6</Position>
     </column>
     <column id="533" parent="492" name="alarm_still_active">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <Position>7</Position>
     </column>
     <column id="534" parent="492" name="seen_on_website">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <Position>8</Position>
     </column>
     <column id="535" parent="492" name="user_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>9</Position>
     </column>
     <foreign-key id="536" parent="492">
@@ -1472,40 +1470,40 @@
     </foreign-key>
     <index id="537" parent="492" name="AbayDashboard_issued_alarms_user_id_4629149b">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="538" parent="492">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="539" parent="493" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="540" parent="493" name="alert_ok_time_start">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="541" parent="493" name="alert_ok_time_end">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="542" parent="493" name="phone_number">
-      <DataType>varchar(15)|0s</DataType>
+      <DasType>varchar(15)|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="543" parent="493" name="phone_carrier">
-      <DataType>varchar(30)|0s</DataType>
+      <DasType>varchar(30)|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="544" parent="493" name="alarm_on">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <Position>6</Position>
     </column>
     <column id="545" parent="493" name="user_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>7</Position>
     </column>
@@ -1518,86 +1516,87 @@
     </foreign-key>
     <index id="547" parent="493" name="sqlite_autoindex_AbayDashboard_profile_1">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <key id="548" parent="493">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <key id="549" parent="493">
       <ColNames>user_id</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_AbayDashboard_profile_1</UnderlyingIndexName>
     </key>
     <column id="550" parent="494" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="551" parent="494" name="water_year_type">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="552" parent="494" name="today_recEnd">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="553" parent="494" name="today_recStart">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="554" parent="494" name="tomorrow_recEnd">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="555" parent="494" name="tomorrow_recStart">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>6</Position>
     </column>
     <key id="556" parent="494">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="557" parent="495" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="558" parent="495" name="name">
-      <DataType>varchar(150)|0s</DataType>
+      <DasType>varchar(150)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <index id="559" parent="495" name="sqlite_autoindex_auth_group_1">
       <ColNames>name</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <key id="560" parent="495">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <key id="561" parent="495">
       <ColNames>name</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_auth_group_1</UnderlyingIndexName>
     </key>
     <column id="562" parent="496" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="563" parent="496" name="group_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="564" parent="496" name="permission_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
@@ -1618,40 +1617,37 @@
     <index id="567" parent="496" name="auth_group_permissions_group_id_permission_id_0cd325b0_uniq">
       <ColNames>group_id
 permission_id</ColNames>
-      <ColumnCollations>
-</ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="568" parent="496" name="auth_group_permissions_group_id_b120cbf9">
       <ColNames>group_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="569" parent="496" name="auth_group_permissions_permission_id_84c5c92e">
       <ColNames>permission_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="570" parent="496">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="571" parent="497" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="572" parent="497" name="content_type_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="573" parent="497" name="codename">
-      <DataType>varchar(100)|0s</DataType>
+      <DasType>varchar(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
     <column id="574" parent="497" name="name">
-      <DataType>varchar(255)|0s</DataType>
+      <DasType>varchar(255)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
@@ -1665,100 +1661,98 @@ permission_id</ColNames>
     <index id="576" parent="497" name="auth_permission_content_type_id_codename_01ab375a_uniq">
       <ColNames>content_type_id
 codename</ColNames>
-      <ColumnCollations>
-</ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="577" parent="497" name="auth_permission_content_type_id_2f476e4b">
       <ColNames>content_type_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="578" parent="497">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="579" parent="498" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="580" parent="498" name="password">
-      <DataType>varchar(128)|0s</DataType>
+      <DasType>varchar(128)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="581" parent="498" name="last_login">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="582" parent="498" name="is_superuser">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
     <column id="583" parent="498" name="username">
-      <DataType>varchar(150)|0s</DataType>
+      <DasType>varchar(150)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
     <column id="584" parent="498" name="last_name">
-      <DataType>varchar(150)|0s</DataType>
+      <DasType>varchar(150)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
     <column id="585" parent="498" name="email">
-      <DataType>varchar(254)|0s</DataType>
+      <DasType>varchar(254)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>7</Position>
     </column>
     <column id="586" parent="498" name="is_staff">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <NotNull>1</NotNull>
       <Position>8</Position>
     </column>
     <column id="587" parent="498" name="is_active">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <NotNull>1</NotNull>
       <Position>9</Position>
     </column>
     <column id="588" parent="498" name="date_joined">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <NotNull>1</NotNull>
       <Position>10</Position>
     </column>
     <column id="589" parent="498" name="first_name">
-      <DataType>varchar(150)|0s</DataType>
+      <DasType>varchar(150)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>11</Position>
     </column>
     <index id="590" parent="498" name="sqlite_autoindex_auth_user_1">
       <ColNames>username</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <key id="591" parent="498">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <key id="592" parent="498">
       <ColNames>username</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_auth_user_1</UnderlyingIndexName>
     </key>
     <column id="593" parent="499" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="594" parent="499" name="user_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="595" parent="499" name="group_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
@@ -1779,35 +1773,32 @@ codename</ColNames>
     <index id="598" parent="499" name="auth_user_groups_user_id_group_id_94350c0c_uniq">
       <ColNames>user_id
 group_id</ColNames>
-      <ColumnCollations>
-</ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="599" parent="499" name="auth_user_groups_user_id_6a12ed8b">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="600" parent="499" name="auth_user_groups_group_id_97559544">
       <ColNames>group_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="601" parent="499">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="602" parent="500" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="603" parent="500" name="user_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="604" parent="500" name="permission_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
@@ -1828,61 +1819,58 @@ group_id</ColNames>
     <index id="607" parent="500" name="auth_user_user_permissions_user_id_permission_id_14a6b632_uniq">
       <ColNames>user_id
 permission_id</ColNames>
-      <ColumnCollations>
-</ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="608" parent="500" name="auth_user_user_permissions_user_id_a95ead1b">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="609" parent="500" name="auth_user_user_permissions_permission_id_1fbb5f2c">
       <ColNames>permission_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="610" parent="500">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <check id="611" parent="501">
       <Predicate>&quot;action_flag&quot; &gt;= 0</Predicate>
     </check>
     <column id="612" parent="501" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="613" parent="501" name="action_time">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="614" parent="501" name="object_id">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="615" parent="501" name="object_repr">
-      <DataType>varchar(200)|0s</DataType>
+      <DasType>varchar(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
     <column id="616" parent="501" name="change_message">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
     <column id="617" parent="501" name="content_type_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <Position>6</Position>
     </column>
     <column id="618" parent="501" name="user_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>7</Position>
     </column>
     <column id="619" parent="501" name="action_flag">
-      <DataType>smallint unsigned|0s</DataType>
+      <DasType>smallint unsigned|0s</DasType>
       <NotNull>1</NotNull>
       <Position>8</Position>
     </column>
@@ -1902,106 +1890,105 @@ permission_id</ColNames>
     </foreign-key>
     <index id="622" parent="501" name="django_admin_log_content_type_id_c4bce8eb">
       <ColNames>content_type_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="623" parent="501" name="django_admin_log_user_id_c564eba6">
       <ColNames>user_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="624" parent="501">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="625" parent="502" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="626" parent="502" name="app_label">
-      <DataType>varchar(100)|0s</DataType>
+      <DasType>varchar(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="627" parent="502" name="model">
-      <DataType>varchar(100)|0s</DataType>
+      <DasType>varchar(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
     <index id="628" parent="502" name="django_content_type_app_label_model_76bd3d3b_uniq">
       <ColNames>app_label
 model</ColNames>
-      <ColumnCollations>
-</ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="629" parent="502">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="630" parent="503" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="631" parent="503" name="app">
-      <DataType>varchar(255)|0s</DataType>
+      <DasType>varchar(255)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="632" parent="503" name="name">
-      <DataType>varchar(255)|0s</DataType>
+      <DasType>varchar(255)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
     <column id="633" parent="503" name="applied">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
     <key id="634" parent="503">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <column id="635" parent="504" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="636" parent="504" name="instance_name">
-      <DataType>varchar(100)|0s</DataType>
+      <DasType>varchar(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="637" parent="504" name="slug">
-      <DataType>varchar(110)|0s</DataType>
+      <DasType>varchar(110)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
     <column id="638" parent="504" name="base_state">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
     <column id="639" parent="504" name="creation">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
     <column id="640" parent="504" name="update">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
     <column id="641" parent="504" name="save_on_change">
-      <DataType>bool|0s</DataType>
+      <DasType>bool|0s</DasType>
       <NotNull>1</NotNull>
       <Position>7</Position>
     </column>
     <column id="642" parent="504" name="stateless_app_id">
-      <DataType>integer|0s</DataType>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>8</Position>
     </column>
@@ -2014,23 +2001,21 @@ model</ColNames>
     </foreign-key>
     <index id="644" parent="504" name="sqlite_autoindex_django_plotly_dash_dashapp_1">
       <ColNames>instance_name</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <index id="645" parent="504" name="sqlite_autoindex_django_plotly_dash_dashapp_2">
       <ColNames>slug</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <index id="646" parent="504" name="django_plotly_dash_dashapp_stateless_app_id_220444de">
       <ColNames>stateless_app_id</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="647" parent="504">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <key id="648" parent="504">
       <ColNames>instance_name</ColNames>
@@ -2041,36 +2026,35 @@ model</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_django_plotly_dash_dashapp_2</UnderlyingIndexName>
     </key>
     <column id="650" parent="505" name="id">
-      <DataType>integer|0s</DataType>
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>integer|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <SequenceIdentity>null</SequenceIdentity>
     </column>
     <column id="651" parent="505" name="app_name">
-      <DataType>varchar(100)|0s</DataType>
+      <DasType>varchar(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="652" parent="505" name="slug">
-      <DataType>varchar(110)|0s</DataType>
+      <DasType>varchar(110)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
     <index id="653" parent="505" name="sqlite_autoindex_django_plotly_dash_statelessapp_1">
       <ColNames>app_name</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <index id="654" parent="505" name="sqlite_autoindex_django_plotly_dash_statelessapp_2">
       <ColNames>slug</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <key id="655" parent="505">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+      <UnderlyingIndexColNames>id</UnderlyingIndexColNames>
     </key>
     <key id="656" parent="505">
       <ColNames>app_name</ColNames>
@@ -2081,29 +2065,27 @@ model</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_django_plotly_dash_statelessapp_2</UnderlyingIndexName>
     </key>
     <column id="658" parent="506" name="session_key">
-      <DataType>varchar(40)|0s</DataType>
+      <DasType>varchar(40)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
     <column id="659" parent="506" name="session_data">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
     <column id="660" parent="506" name="expire_date">
-      <DataType>datetime|0s</DataType>
+      <DasType>datetime|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
     <index id="661" parent="506" name="sqlite_autoindex_django_session_1">
       <ColNames>session_key</ColNames>
-      <ColumnCollations></ColumnCollations>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
     <index id="662" parent="506" name="django_session_expire_date_a5c62663">
       <ColNames>expire_date</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="663" parent="506">
       <ColNames>session_key</ColNames>
@@ -2111,207 +2093,206 @@ model</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_django_session_1</UnderlyingIndexName>
     </key>
     <column id="664" parent="507" name="index">
-      <DataType>INTEGER|0s</DataType>
+      <DasType>INTEGER|0s</DasType>
       <Position>1</Position>
     </column>
     <column id="665" parent="507" name="GMT">
-      <DataType>TIMESTAMP|0s</DataType>
+      <DasType>TIMESTAMP|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="666" parent="507" name="R4_fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="667" parent="507" name="R30_fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="668" parent="507" name="R11_fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="669" parent="507" name="R20_fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>6</Position>
     </column>
     <column id="670" parent="507" name="FORECAST_ISSUED">
-      <DataType>TIMESTAMP|0s</DataType>
+      <DasType>TIMESTAMP|0s</DasType>
       <Position>7</Position>
     </column>
     <column id="671" parent="507" name="MFRA_fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>8</Position>
     </column>
     <column id="672" parent="507" name="Pmin">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>9</Position>
     </column>
     <column id="673" parent="507" name="Pmax">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>10</Position>
     </column>
     <column id="674" parent="507" name="Abay_AF_Observed">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>11</Position>
     </column>
     <column id="675" parent="507" name="Abay_AF_Change_Observed">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>12</Position>
     </column>
     <column id="676" parent="507" name="RA_MW">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>13</Position>
     </column>
     <column id="677" parent="507" name="MF_MW">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>14</Position>
     </column>
     <column id="678" parent="507" name="Oxbow_fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>15</Position>
     </column>
     <column id="679" parent="507" name="Oxbow_Outflow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>16</Position>
     </column>
     <column id="680" parent="507" name="R5_Valve">
-      <DataType>INTEGER|0s</DataType>
+      <DasType>INTEGER|0s</DasType>
       <Position>17</Position>
     </column>
     <column id="681" parent="507" name="RA_Inflow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>18</Position>
     </column>
     <column id="682" parent="507" name="MF_Inflow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>19</Position>
     </column>
     <column id="683" parent="507" name="Ibay_Spill">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>20</Position>
     </column>
     <column id="684" parent="507" name="R20_fcst_adjusted">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>21</Position>
     </column>
     <column id="685" parent="507" name="Abay_Inflow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>22</Position>
     </column>
     <column id="686" parent="507" name="Abay_Outflow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>23</Position>
     </column>
     <column id="687" parent="507" name="Abay_AF_Change">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>24</Position>
     </column>
     <column id="688" parent="507" name="Abay_AF_Change_Error">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>25</Position>
     </column>
     <column id="689" parent="507" name="Abay_CFS_Error">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>26</Position>
     </column>
     <column id="690" parent="507" name="Abay_AF_Fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>27</Position>
     </column>
     <column id="691" parent="507" name="Abay_Elev_Fcst">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>28</Position>
     </column>
     <index id="692" parent="507" name="ix_forecast_data_index">
       <ColNames>index</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <column id="693" parent="508" name="Timestamp">
-      <DataType>TEXT|0s</DataType>
+      <DasType>TEXT|0s</DasType>
       <Position>1</Position>
     </column>
     <column id="694" parent="508" name="R4_Flow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="695" parent="508" name="UnitsAbbreviation">
-      <DataType>TEXT|0s</DataType>
+      <DasType>TEXT|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="696" parent="508" name="R11_Flow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="697" parent="508" name="R30_Flow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="698" parent="508" name="Afterbay_Elevation">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>6</Position>
     </column>
     <column id="699" parent="508" name="Afterbay_Elevation_Setpoint">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>7</Position>
     </column>
     <column id="700" parent="508" name="Oxbow_Gov_Setpoint">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>8</Position>
     </column>
     <column id="701" parent="508" name="Oxbow_Power">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>9</Position>
     </column>
     <column id="702" parent="508" name="R5_Flow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>10</Position>
     </column>
     <column id="703" parent="508" name="Hell_Hole_Elevation">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>11</Position>
     </column>
     <column id="704" parent="508" name="GEN_MDFK_and_RA">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>12</Position>
     </column>
     <column id="705" parent="508" name="ADS_MDFK_and_RA">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>13</Position>
     </column>
     <column id="706" parent="508" name="ADS_Oxbow">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>14</Position>
     </column>
     <column id="707" parent="508" name="Pmin">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>15</Position>
     </column>
     <column id="708" parent="508" name="Pmax">
-      <DataType>REAL|0s</DataType>
+      <DasType>REAL|0s</DasType>
       <Position>16</Position>
     </column>
     <column id="709" parent="508" name="id">
-      <DataType>INTEGER|0s</DataType>
+      <DasType>INTEGER|0s</DasType>
       <Position>17</Position>
     </column>
     <column id="710" parent="509" name="type">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>1</Position>
     </column>
     <column id="711" parent="509" name="name">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>2</Position>
     </column>
     <column id="712" parent="509" name="tbl_name">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>3</Position>
     </column>
     <column id="713" parent="509" name="rootpage">
-      <DataType>int|0s</DataType>
+      <DasType>int|0s</DasType>
       <Position>4</Position>
     </column>
     <column id="714" parent="509" name="sql">
-      <DataType>text|0s</DataType>
+      <DasType>text|0s</DasType>
       <Position>5</Position>
     </column>
     <column id="715" parent="510" name="name">

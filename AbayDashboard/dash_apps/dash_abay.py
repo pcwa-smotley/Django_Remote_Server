@@ -1,8 +1,9 @@
 import os
 from io import BytesIO
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc, html
+#import dash_core_components as dcc
+#import dash_html_components as html
 import pandas as pd
 from zipfile import ZipFile
 import copy
@@ -116,7 +117,7 @@ class PiRequest:
         if "Middle Fork" in self.meter_name or "Oxbow" in self.meter_name:
             return "Generation Units"
 
-local = False
+local = True
 if local:
     app = dash.Dash(
         external_stylesheets=[dbc.themes.BOOTSTRAP],

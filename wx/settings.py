@@ -15,6 +15,7 @@ import os, platform, sys
 import environ
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+#from celery.schedules import crontab
 
 sentry_sdk.init(
     dsn="https://7ba428aaa7c64ce599540696a815522f@o746682.ingest.sentry.io/5790964",
@@ -54,6 +55,8 @@ ALLOWED_HOSTS = ['energy.pcwa.net', '174.138.60.125', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    #'django_celery_beat',
+    #'django_celery_results',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -174,3 +177,22 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = env('GMAIL_USER')
 EMAIL_HOST_PASSWORD = env('GMAIL_PASSWORD')
 EMAIL_USE_SSL = True
+
+# # Celery settings for looping pi_checker.py
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'UTC'
+#
+# CELERY_BEAT_SCHEDULE = {
+#     'run_main_every_minute': {
+#         'task': 'AbayDashboard.pi_checker',
+#         'schedule': crontab(minute='*/1'),  # Executes every minute
+#     },
+#     'run_get_cnrfc_data_every_30_minutes': {
+#         'task': 'AbayDashboard.pi_checker.get_cnrfc_data',
+#         'schedule': crontab(minute='*/30'),  # Executes every 30 minutes
+#     },
+# }
