@@ -122,10 +122,14 @@ class CustomException(Exception):
 def main():
     try:
         print("Current Time in PDT is: ", datetime.now(tz=pytz.timezone('US/Pacific')).strftime("%a %H:%M:%S %p"))
-        meters = [PiRequest("OPS", "R4", "Flow"), PiRequest("OPS", "R11", "Flow"),
-                  PiRequest("OPS", "R30", "Flow"), PiRequest("OPS", "Afterbay", "Elevation"),
-                  PiRequest("OPS", "Afterbay", "Elevation Setpoint"), PiRequest("OPS", "Oxbow", "Gov Setpoint"),
-                  PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS", "R5", "Flow", False, False),
+        meters = [PiRequest("OPS", "R4", "Flow"),
+                  PiRequest("OPS", "R11", "Flow"),
+                  PiRequest("OPS", "R30", "Flow"),
+                  PiRequest("OPS", "Afterbay", "Elevation"),
+                  PiRequest("OPS", "Afterbay", "Elevation Setpoint"),
+                  PiRequest("OPS", "Oxbow", "Gov Setpoint"),
+                  PiRequest("OPS", "Oxbow", "Power"),
+                  PiRequest("OPS", "R5", "Flow", False, False),
                   PiRequest("OPS", "Hell Hole", "Elevation", False, False),
                   PiRequest("Energy_Marketing", "MFP_Total_Gen", "GEN_MDFK_and_RA"),
                   PiRequest("Energy_Marketing", "MFP_ADS", "ADS_MDFK_and_RA"),

@@ -142,6 +142,9 @@ def main(meters):
     df_all = pd.DataFrame(list(PiData.objects.all().values()))
     last_timestamp_age = pd.Timedelta(datetime.now(tz=df_all["Timestamp"].iloc[-1].tzinfo) - df_all["Timestamp"].iloc[-1]).seconds / 60
 
+    # If pi_checker.py is not running, the data will be old. If it's older than 15 minutes, we'll update the data.
+    # A more robust version of this would be to restart pi_checker.py if it's not running, but this basically has the
+    # same code as pi_checker.py and will just update the data if it's not running.
     if last_timestamp_age > 15:
         logging.info(f"Is pi_cheker.py running? Data in database is {int(last_timestamp_age) } minutes old. "
                      f"Pulling new data inside dash_abay_sql. : {datetime.now().strftime('%a, %d %b %p %H:%M')}")
@@ -230,7 +233,7 @@ def main(meters):
         for p in psutil.process_iter():
             if "python" in p.name():            # Any process that is python
                 for arg in p.cmdline():         # Check all python processes
-                    if "pi_checker" in arg:     # If "pi_checker" is in any of those, program is running.
+                    if "pi_checker.py" in arg:     # If "pi_checker" is in any of those, program is running.
                         pi_process = True
         #if not pi_process:
             #send_mail("720*****","s*****@****.com","pi_checker.py is not running", "PI_CHEKER STATUS: OFF")
@@ -521,7 +524,7 @@ def main(meters):
 
         df_full.Timestamp = df_full['Timestamp'].dt.tz_convert('US/Pacific')
         df_cnrfc.GMT = pd.to_datetime(df_cnrfc.GMT).dt.tz_convert('US/Pacific')
-        # test = df_cnrfc[df_cnrfc["Oxbow_fcst"].notnull()]
+
         # Initial Load, don't show forecast
         if toggle_id == 'dummy-dataframe' and len(figure['data']) < 2:
             figure['data'].append(
@@ -810,10 +813,13 @@ def update_data(meters, rfc_json_data):
     # This will store the data for all the PI requests
     df_all = pd.DataFrame()
 
-    meters = [PiRequest("OPS", "R4", "Flow"), PiRequest("OPS", "R11", "Flow"),
-              PiRequest("OPS", "R30", "Flow"), PiRequest("OPS", "Afterbay", "Elevation"),
+    meters = [PiRequest("OPS", "R4", "Flow"),
+              PiRequest("OPS", "R11", "Flow"),
+              PiRequest("OPS", "R30", "Flow"),
+              PiRequest("OPS", "Afterbay", "Elevation"),
               PiRequest("OPS", "Afterbay", "Elevation Setpoint"),
-              PiRequest("OPS", "Oxbow", "Power"), PiRequest("OPS","R5","Flow"),
+              PiRequest("OPS", "Oxbow", "Power"),
+              PiRequest("OPS","R5","Flow"),
               PiRequest("OPS","Hell Hole","Elevation"),
               PiRequest("Energy_Marketing", None, "GEN_MDFK_and_RA"),
               PiRequest("Energy_Marketing", None, "ADS_MDFK_and_RA"),
