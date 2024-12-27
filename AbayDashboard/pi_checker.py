@@ -17,7 +17,7 @@ import logging
 from io import StringIO
 from urllib.error import HTTPError, URLError
 import smtplib
-
+from celery import shared_task
 if "Linux" in platform.platform(terse=True):
     sys.path.append("/var/www/wx/")
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wx.settings')
@@ -25,20 +25,20 @@ django.setup()
 from django.db import connection, IntegrityError
 from django.db.models import Q
 from django.conf import settings
-from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recreation_Data, ForecastData, PiData
+from AbayDashboard.models import AlertPrefs, Profile, User, Issued_Alarms, Recreation_Data, ForecastData, PiData, CeleryLog
 import requests
-from timeloop import Timeloop
+#from timeloop import Timeloop
 from scipy import stats
 import numpy as np
-from mailer import send_mail
+from AbayDashboard.mailer import send_mail
 import pytz
 import sqlite3
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __author__ = "Shane Motley"
 __copyright__ = "Copyright 2022, PCWA"
 
-t1 = Timeloop()
+#t1 = Timeloop()
 
 class PiRequest:
     # https://flows.pcwa.net/piwebapi/assetdatabases/D0vXCmerKddk-VtN6YtBmF5A8lsCue2JtEm2KAZ4UNRKIwQlVTSU5FU1NQSTJcT1BT/elements
@@ -117,11 +117,20 @@ class CustomException(Exception):
         super().__init__(self.message)
 
 
-@t1.job(interval=timedelta(minutes=1))
-#@shared_task()
+#@t1.job(interval=timedelta(minutes=1))
+@shared_task()
 def main():
+    log_stream = StringIO()
+    logging.basicConfig(level=logging.INFO, handlers=[
+        logging.FileHandler("pi_checker_err.log"),
+        logging.StreamHandler(sys.stdout)
+    ])
+    logger = logging.getLogger('celery')
     try:
-        print("Current Time in PDT is: ", datetime.now(tz=pytz.timezone('US/Pacific')).strftime("%a %H:%M:%S %p"))
+        # Log the current time to the log file
+        logger.info(f"Current Time in PDT is: "
+                     f"{datetime.now(tz=pytz.timezone('US/Pacific')).strftime('%a %b %d, %H:%M:%S %p')}")
+        #print("Current Time in PDT is: ", datetime.now(tz=pytz.timezone('US/Pacific')).strftime("%a %H:%M:%S %p"))
         meters = [PiRequest("OPS", "R4", "Flow"),
                   PiRequest("OPS", "R11", "Flow"),
                   PiRequest("OPS", "R30", "Flow"),
@@ -129,7 +138,7 @@ def main():
                   PiRequest("OPS", "Afterbay", "Elevation Setpoint"),
                   PiRequest("OPS", "Oxbow", "Gov Setpoint"),
                   PiRequest("OPS", "Oxbow", "Power"),
-                  PiRequest("OPS", "R5", "Flow", False, False),
+                  PiRequest("OPS", "R5L", "Flow", False, False),
                   PiRequest("OPS", "Hell Hole", "Elevation", False, False),
                   PiRequest("Energy_Marketing", "MFP_Total_Gen", "GEN_MDFK_and_RA"),
                   PiRequest("Energy_Marketing", "MFP_ADS", "ADS_MDFK_and_RA"),
@@ -152,7 +161,7 @@ def main():
 
                 # Remove any outliers or data spikes
                 try:
-                    df_meter = drop_numerical_outliers(df_meter, meter, z_thresh=3)
+                    df_meter = drop_numerical_outliers(df_meter, meter, z_thresh=3, logger=logger)
                 except ValueError as e:
                     print("Unable to drop outliers", e)
                 # Rename the column (this was needed if we wanted to merge all the Value columns into a dataframe)
@@ -174,11 +183,15 @@ def main():
                     df_all.index.names = ['index']
 
                 # Check to see if a new alarm needed, only check over the 60 minutes.
-                df_last_hour = df_all[df_all.index > df_all.index.max() - pd.Timedelta(hours=1)]
+                if df_all.empty or pd.isnull(df_all.index.max()):
+                    logger.warning("No data in df_all. Skipping alarm checks.")
+                else:
+                    df_last_hour = df_all[df_all.index > df_all.index.max() - pd.Timedelta(hours=1)]
 
                 # If we're monitoring for alerts and the list is not empty, check for alerts.
                 if meter.monitor_for_alerts and df_last_hour[renamed_col].dropna().values.size > 0:
                     alarm_checker(meter, df_last_hour, renamed_col)
+                #print(f"This is {renamed_col} \n {df_meter[renamed_col]}")
 
             except (requests.exceptions.RequestException, KeyError):
                 print('HTTP Request failed')
@@ -188,18 +201,18 @@ def main():
         const_a = 0.09  # Default is 0.0855.
         const_b = 0.135378  # Default is 0.138639
         try:
-            df_all["Pmin1"] = const_a * (df_all["R4_Flow"] - df_all["R5_Flow"])
-            df_all["Pmin2"] = (-0.14 * (df_all["R4_Flow"] - df_all["R5_Flow"]) *
+            df_all["Pmin1"] = const_a * (df_all["R4_Flow"] - df_all["R5L_Flow"])
+            df_all["Pmin2"] = (-0.14 * (df_all["R4_Flow"] - df_all["R5L_Flow"]) *
                                ((df_all["Hell_Hole_Elevation"] - 2536) / (4536 - 2536)))
             df_all["Pmin"] = df_all[["Pmin1", "Pmin2"]].max(axis=1)
 
             df_all["Pmax1"] = ((const_a + const_b) / const_b) * 124 + (
-                        const_a * (df_all["R4_Flow"] - df_all["R5_Flow"]))
-            df_all["Pmax2"] = ((const_a + const_b) / const_a) * 86 - (const_b * (df_all["R4_Flow"] - df_all["R5_Flow"]))
+                        const_a * (df_all["R4_Flow"] - df_all["R5L_Flow"]))
+            df_all["Pmax2"] = ((const_a + const_b) / const_a) * 86 - (const_b * (df_all["R4_Flow"] - df_all["R5L_Flow"]))
 
             df_all["Pmax"] = df_all[["Pmax1", "Pmax2"]].min(axis=1)
 
-            df_all.drop(["Pmin1", "Pmin2", "Pmax1", "Pmax2"], axis=1, inplace=True)
+            df_all.drop(["Pmin1", "Pmin2", "Pmax1", "Pmax2"], axis=1, inplace=True, errors='ignore')
         except ValueError as e:
             print("Can Not Calculate Pmin or Pmax")
             df_all[["Pmin", "Pmax"]] = np.nan
@@ -207,76 +220,136 @@ def main():
 
         DB_PATH = settings.DATABASES['default']['NAME']
         CONN = sqlite3.connect(DB_PATH, check_same_thread=False)
-        df_all.drop(["Good", "Questionable", "Substituted", "Annotated"], axis=1, inplace=True)
+        df_all.drop(["Good", "Questionable", "Substituted", "Annotated"], axis=1, inplace=True, errors='ignore')
 
         # A requirement of django is to have a column named ID or a primary key. ID will serve that purpose.
         df_all.reset_index(inplace=True, drop=True)
         df_all['id'] = df_all.index
         df_all.to_sql("pi_data", CONN, if_exists='replace', index=False)
+        #print(df_all)
 
         CONN.close()
         # Email / Text any alerts that may be needed.
         send_alerts()
+        #CeleryLog.objects.create(task_name='main')
         return
         # An error occurred, alert admin and terminate program.
     except Exception as e:
-        logging.error("Exception occurred", exc_info=True)
-        print(log_stream.getvalue())
-        send_mail(f"7203750163@mms.att.net", "smotley@mac.com", log_stream.getvalue(), "Pi Checker Crashed")
+        logger.error("Exception occurred", exc_info=True)
+        send_mail("7203750163@mms.att.net", "smotley@mac.com", log_stream.getvalue(), "Pi Checker Crashed")
         raise CustomException("An error occurred in main function")
-        sys.exit(1)
-    finally:
+
+    #finally:
         # Close the log stream
-        log_stream.close()  # Close the log stream
+        #log_stream.close()  # Close the log stream
 
 
 def alarm_checker(meter, df, column_name):
+    # Safeguard: If no valid data points, just return
+    values_nonan = df[column_name].dropna()
+    if values_nonan.empty:
+        return  # Nothing to check if we have no data
+
     # For flows and abay elevation, we have two alarms;
     # 1) For high values and 2) For low values. We need to check both.
     if meter.attribute == "Flow" or meter.attribute == "Elevation":
-        # Using Q() operators allows us to create dynamic names.
-        hi_Q = Q(**{f"{meter.meter_name.lower()}_hi__lt": df[column_name].dropna().values.max()})
-        lo_Q = Q(**{f"{meter.meter_name.lower()}_lo__gt": df[column_name].dropna().values.min()})
+        max_val = values_nonan.max()
+        min_val = values_nonan.min()
+
+        # Using Q() operators allows us to create dynamic names
+        # e.g., if meter_name is "Afterbay", we'll check "afterbay_hi" and "afterbay_lo".
+        hi_field = f"{meter.meter_name.lower()}_hi"
+        lo_field = f"{meter.meter_name.lower()}_lo"
+
+        # Build the queries: e.g. "afterbay_hi__lt=max_val"
+        hi_Q = Q(**{f"{hi_field}__lt": max_val})
+        lo_Q = Q(**{f"{lo_field}__gt": min_val})
+
         alert_hi = AlertPrefs.objects.filter(hi_Q)
         alert_lo = AlertPrefs.objects.filter(lo_Q)
+
+        # 1) Reset any active hi alarms that no longer qualify
+        alarm_active_hi = Issued_Alarms.objects.filter(
+            alarm_still_active=True,
+            alarm_trigger=hi_field
+        )
+        for active_alarm in alarm_active_hi:
+            # If the user no longer qualifies for a hi alarm
+            # (i.e., no AlertPrefs row for them satisfies hi_Q), reset alarm.
+            if not alert_hi.filter(user_id=active_alarm.user_id).exists():
+                active_alarm.alarm_still_active = False
+                active_alarm.save()
+
+        # 2) Reset any active lo alarms that no longer qualify
+        alarm_active_lo = Issued_Alarms.objects.filter(
+            alarm_still_active=True,
+            alarm_trigger=lo_field
+        )
+        for active_alarm in alarm_active_lo:
+            if not alert_lo.filter(user_id=active_alarm.user_id).exists():
+                active_alarm.alarm_still_active = False
+                active_alarm.save()
+
+        # 3) Create or update hi alarms if `alert_hi` is not empty
+        if alert_hi.exists():
+            update_alertDB(
+                users=alert_hi,
+                alarm_trigger=hi_field,
+                trigger_value=max_val
+            )
+
+        # 4) Create or update lo alarms if `alert_lo` is not empty
+        if alert_lo.exists():
+            update_alertDB(
+                users=alert_lo,
+                alarm_trigger=lo_field,
+                trigger_value=min_val
+            )
+
+
+        # # Using Q() operators allows us to create dynamic names.
+        # hi_Q = Q(**{f"{meter.meter_name.lower()}_hi__lt": df[column_name].dropna().values.max()})
+        # lo_Q = Q(**{f"{meter.meter_name.lower()}_lo__gt": df[column_name].dropna().values.min()})
+        # alert_hi = AlertPrefs.objects.filter(hi_Q)
+        # alert_lo = AlertPrefs.objects.filter(lo_Q)
 
         # ############### RESET ALARMS IF NEEDED ##############
         # Check for case were an alarm was issued for a given meter, but now the value is below the alert threshold.
         # This will reset the alarm, so that if the threshold is met again, it will go off.
-        alarm_active_hi = Issued_Alarms.objects.filter(alarm_still_active=True,
-                                                       alarm_trigger=f"{meter.meter_name.lower()}_hi")
-        alarm_active_lo = Issued_Alarms.objects.filter(alarm_still_active=True,
-                                                       alarm_trigger=f"{meter.meter_name.lower()}_lo")
-        # Check all active alarms
-        if alarm_active_hi.exists():
-            # Loop through all active alarms
-            for active_alarm in alarm_active_hi:
-                # If the an alarm is active, but it is now not exceeding the threshold, reset the alarm.
-                # Note: hi_Q contains 1 hour of data, so the entire hour must be below the threshold to reset the alarm.
-                if not AlertPrefs.objects.filter(hi_Q, user_id=active_alarm.user_id).exists():
-                    Issued_Alarms.objects.filter(id=active_alarm.id).update(alarm_still_active=False)
-
-        # Check all active alarms
-        if alarm_active_lo.exists():
-            # Loop through all active alarms
-            for active_alarm in alarm_active_lo:
-                # If the an alarm is active, but it is now not exceeding the threshold, reset the alarm.
-                # Note: lo_Q contains 1 hour of data, so the entire hour must be below the threshold to reset the alarm.
-                if not AlertPrefs.objects.filter(lo_Q, user_id=active_alarm.user_id).exists():
-                    Issued_Alarms.objects.filter(id=active_alarm.id).update(alarm_still_active=False)
+        # alarm_active_hi = Issued_Alarms.objects.filter(alarm_still_active=True,
+        #                                                alarm_trigger=f"{meter.meter_name.lower()}_hi")
+        # alarm_active_lo = Issued_Alarms.objects.filter(alarm_still_active=True,
+        #                                                alarm_trigger=f"{meter.meter_name.lower()}_lo")
+        # # Check all active alarms
+        # if alarm_active_hi.exists():
+        #     # Loop through all active alarms
+        #     for active_alarm in alarm_active_hi:
+        #         # If the an alarm is active, but it is now not exceeding the threshold, reset the alarm.
+        #         # Note: hi_Q contains 1 hour of data, so the entire hour must be below the threshold to reset the alarm.
+        #         if not AlertPrefs.objects.filter(hi_Q, user_id=active_alarm.user_id).exists():
+        #             Issued_Alarms.objects.filter(id=active_alarm.id).update(alarm_still_active=False)
+        #
+        # # Check all active alarms
+        # if alarm_active_lo.exists():
+        #     # Loop through all active alarms
+        #     for active_alarm in alarm_active_lo:
+        #         # If the an alarm is active, but it is now not exceeding the threshold, reset the alarm.
+        #         # Note: lo_Q contains 1 hour of data, so the entire hour must be below the threshold to reset the alarm.
+        #         if not AlertPrefs.objects.filter(lo_Q, user_id=active_alarm.user_id).exists():
+        #             Issued_Alarms.objects.filter(id=active_alarm.id).update(alarm_still_active=False)
         # ################## END RESET ###############
 
-        if alert_hi.exists():
-            update_alertDB(users=alert_hi,
-                           alarm_trigger=f"{meter.meter_name.lower()}_hi",
-                           trigger_value=df[column_name].values.max()
-                           )
-
-        if alert_lo.exists():
-            update_alertDB(users=alert_lo,
-                           alarm_trigger=f"{meter.meter_name.lower()}_lo",
-                           trigger_value=df[column_name].values.min()
-                           )
+        # if alert_hi.exists():
+        #     update_alertDB(users=alert_hi,
+        #                    alarm_trigger=f"{meter.meter_name.lower()}_hi",
+        #                    trigger_value=df[column_name].values.max()
+        #                    )
+        #
+        # if alert_lo.exists():
+        #     update_alertDB(users=alert_lo,
+        #                    alarm_trigger=f"{meter.meter_name.lower()}_lo",
+        #                    trigger_value=df[column_name].values.min()
+        #                    )
 
     # If the elevation setpoint changes, this code will alert all users. It's a simplified version of the other
     # alerts since there's no hi/lo and there's no threshold to hit; just a change > 0.5' in an hour.
@@ -557,9 +630,9 @@ def abay_forecast(df_cnrfc):
         df["Pmin"] = df[["Pmin1", "Pmin2"]].max(axis=1)
 
         df["Pmax1"] = ((const_a + const_b) / const_b) * (
-                    124 + (const_a * df["R4_fcst"] - df_pi["R5_Flow"].iloc[-1]))
+                    124 + (const_a * df["R4_fcst"] - df_pi["R5L_Flow"].iloc[-1]))
         df["Pmax2"] = ((const_a + const_b) / const_a) * (
-                    86 - (const_b * df["R4_fcst"] - df_pi["R5_Flow"].iloc[-1]))
+                    86 - (const_b * df["R4_fcst"] - df_pi["R5L_Flow"].iloc[-1]))
 
         df["Pmax"] = df[["Pmax1", "Pmax2"]].min(axis=1)
 
@@ -630,12 +703,12 @@ def abay_forecast(df_cnrfc):
     # Conversion from MW to cfs ==> CFS @ Oxbow = MW * 163.73 + 83.956
     df["Oxbow_Outflow"] = (df["Oxbow_fcst"] * 163.73) + 83.956
 
-    # R5 Valve never changes (at least not in the last 5 years in PI data)
-    df["R5_Valve"] = 28
+    # R5 Value never changes (at least not in the last 5 years in PI data)
+    df["R5L_Value"] = 28
 
     # If CCS is on, we need to account for the fact that Ralston will run at least at the requirement for the Pmin.
     if CCS:
-        #df["RA_MW"] = max(df["RA_MW"], min(86,((df["R4_fcst"]-df["R5_Valve"])/10)*RAtoMF_ratio))
+        #df["RA_MW"] = max(df["RA_MW"], min(86,((df["R4_fcst"]-df["R5_Value"])/10)*RAtoMF_ratio))
         df["RA_MW"] = np.maximum(df["RA_MW"], df["Pmin"] * RAtoMF_ratio)
 
     # Polynomial best fits for conversions.
@@ -651,7 +724,7 @@ def abay_forecast(df_cnrfc):
     # It helps to look at the PI Vision screen for this.
     # Ibay In: 1) Inflow from MFPH (the water that's powering MFPH)
     #          2) The water flowing in at R4
-    # Ibay Out: 1) Valve above R5 (nearly always 28)         = 28
+    # Ibay Out: 1) Value above R5 (nearly always 28)         = 28
     #           2) Outflow through tunnel to power Ralston.  = RA_out (CAN BE INFLUENCED BY CCS MODE, I.E. R4)
     #           3) Spill                                     = (MF_IN - RA_OUT) + R4
     #
@@ -686,7 +759,7 @@ def abay_forecast(df_cnrfc):
     #        observed error.
     #
     # Ibay In - Ibay Out = The spill that will eventually make it into Abay through R20.
-    df["Ibay_Spill"] = np.maximum(0,(df["MF_Inflow"] - df["RA_Inflow"])) + df["R5_Valve"] + df['R4_fcst']
+    df["Ibay_Spill"] = np.maximum(0,(df["MF_Inflow"] - df["RA_Inflow"])) + df["R5L_Value"] + df['R4_fcst']
 
     # CNRFC is just forecasting natural flow, which I believe is just everything from Ibay down. Therefore, it should
     # always be too low and needs to account for any water getting released from IBAY.
@@ -722,8 +795,8 @@ def abay_forecast(df_cnrfc):
     return df
 
 
-@t1.job(interval=timedelta(minutes=30))
-#@shared_task()
+#@t1.job(interval=timedelta(minutes=30))
+@shared_task()
 def get_cnrfc_data():
     new_df = pd.DataFrame(columns = [f.name for f in ForecastData._meta.get_fields()])
     ######################   CNRFC SECTION ######################################
@@ -797,9 +870,7 @@ def get_cnrfc_data():
                                                                               "R11_fcst"]].apply(pd.to_numeric) * 1000
 
         # Only keep the forecasts we care about
-        df_cnrfc.drop(df_cnrfc.columns
-                      .difference(["R20_fcst", "R30_fcst", "R4_fcst", "R11_fcst", "FORECAST_ISSUED", "GMT"]),
-                      1, inplace=True)
+        df_cnrfc.drop(columns=df_cnrfc.columns.difference(["R20_fcst", "R30_fcst", "R4_fcst", "R11_fcst", "FORECAST_ISSUED", "GMT"]), inplace=True)
 
     # all_columns = [f.name for f in ForecastData._meta.get_fields()]
 
@@ -811,6 +882,8 @@ def get_cnrfc_data():
         logging.debug(f"The Oxbow Forecast Could Not be Created because {sys.exc_info()[0]}")
         print(f"The Oxbow Forecast Could Not be Created because {sys.exc_info()[0]}")
 
+    #CeleryLog.objects.create(task_name='get_cnrfc_data')
+
     DB_PATH = settings.DATABASES['default']['NAME']
     CONN = sqlite3.connect(DB_PATH, check_same_thread=False)
     df_cnrfc.to_sql("forecast_data", CONN, if_exists='replace')
@@ -818,7 +891,7 @@ def get_cnrfc_data():
     return
 
 
-def drop_numerical_outliers(df, meter, z_thresh):
+def drop_numerical_outliers(df, meter, z_thresh, logger):
     # Constrains will contain `True` or `False` depending on if it is a value below the threshold.
     # 1) For each column, first it computes the Z-score of each value in the column,
     #   relative to the column mean and standard deviation.
@@ -844,7 +917,7 @@ def drop_numerical_outliers(df, meter, z_thresh):
     df.drop(df.dropna().index[~constrains], inplace=True)
 
     if df.shape[0] != orig_size:
-        print(f"A total of {orig_size - df.shape[0]} data spikes detected in {meter.meter_name}. "
+        logger.info(f"A total of {orig_size - df.shape[0]} data spikes detected in {meter.meter_name}. "
               f" The data have been removed")
     return df
 
@@ -855,7 +928,7 @@ def create_table():
 
 
 if __name__ == "__main__":
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AbayTracker.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wx.settings')
     log_stream = StringIO()
     logging.basicConfig(level=logging.INFO, handlers=[
         logging.FileHandler("pi_checker_err.log"),
@@ -867,7 +940,7 @@ if __name__ == "__main__":
         print(f"Running pi_checker version: {__version__}")
         main()
         get_cnrfc_data()
-        t1.start(block=True)
+        #t1.start(block=True)
 
     # An error occurred, alert admin and terminate program.
     except CustomException as e:

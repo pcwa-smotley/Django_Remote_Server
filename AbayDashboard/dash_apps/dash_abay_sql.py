@@ -179,7 +179,7 @@ def main(meters):
         height=400
     )
 
-    top_row_cards = top_cards(df_all, df_hourly_resample)
+    top_row_cards = top_cards(df_all, df_hourly_resample, logging)
 
     second_row_cards = second_cards(df_all, df_hourly_resample)
 
@@ -658,7 +658,12 @@ def main(meters):
             df_cnrfc.GMT = pd.to_datetime(df_cnrfc.GMT).dt.tz_convert('US/Pacific')
             df_cnrfc.FORECAST_ISSUED = pd.to_datetime(df_cnrfc.FORECAST_ISSUED).dt.tz_convert('US/Pacific')
 
-            cnrfc_timestamp = f" Fcst Issued: {(df_cnrfc['FORECAST_ISSUED'][1]).strftime('%a, %-d %b %-I %p')}"  # The entire FORECAST_ISSUED column is the same value.
+            # Note the %-I and %-d are to remove the leading zero in the time and day, but they are platform specific
+            # so they may not work on Windows, which is why we need the extra code in here with .replace(' 0', ' ')
+            forecast_issued = df_cnrfc['FORECAST_ISSUED'][1]
+            formatted_date = forecast_issued.strftime('%a, %d %b %I %p').replace(' 0', ' ')
+            cnrfc_timestamp = f"Fcst Issued: {formatted_date}"
+            #cnrfc_timestamp = f" Fcst Issued: {(df_cnrfc['FORECAST_ISSUED'][1]).strftime('%a, %-d %b %-I %p')}"  # The entire FORECAST_ISSUED column is the same value.
 
             figR4 = go.Figure(
                 {
@@ -819,7 +824,7 @@ def update_data(meters, rfc_json_data):
               PiRequest("OPS", "Afterbay", "Elevation"),
               PiRequest("OPS", "Afterbay", "Elevation Setpoint"),
               PiRequest("OPS", "Oxbow", "Power"),
-              PiRequest("OPS","R5","Flow"),
+              PiRequest("OPS","R5L","Flow"),
               PiRequest("OPS","Hell Hole","Elevation"),
               PiRequest("Energy_Marketing", None, "GEN_MDFK_and_RA"),
               PiRequest("Energy_Marketing", None, "ADS_MDFK_and_RA"),
@@ -866,13 +871,13 @@ def update_data(meters, rfc_json_data):
     const_a = 0.09      # Default is 0.0855.
     const_b = 0.135378  # Default is 0.138639
     try:
-        df_all["Pmin1"] = const_a*(df_all["R4_Flow"]-df_all["R5_Flow"])
-        df_all["Pmin2"] = (-0.14*(df_all["R4_Flow"]-df_all["R5_Flow"])*
+        df_all["Pmin1"] = const_a*(df_all["R4_Flow"]-df_all["R5L_Flow"])
+        df_all["Pmin2"] = (-0.14*(df_all["R4_Flow"]-df_all["R5L_Flow"])*
                               ((df_all["Hell_Hole_Elevation"]-2536)/(4536-2536)))
         df_all["Pmin"] = df_all[["Pmin1","Pmin2"]].max(axis=1)
 
-        df_all["Pmax1"] = ((const_a+const_b)/const_b)*124+(const_a*(df_all["R4_Flow"]-df_all["R5_Flow"]))
-        df_all["Pmax2"] = ((const_a+const_b)/const_a)*86-(const_b*(df_all["R4_Flow"]-df_all["R5_Flow"]))
+        df_all["Pmax1"] = ((const_a+const_b)/const_b)*124+(const_a*(df_all["R4_Flow"]-df_all["R5L_Flow"]))
+        df_all["Pmax2"] = ((const_a+const_b)/const_a)*86-(const_b*(df_all["R4_Flow"]-df_all["R5L_Flow"]))
 
         df_all["Pmax"] = df_all[["Pmax1","Pmax2"]].min(axis=1)
 
@@ -1013,9 +1018,9 @@ def abay_forecast(df, df_pi):
         df["Pmin"] = df[["Pmin1", "Pmin2"]].max(axis=1)
 
         df["Pmax1"] = ((const_a + const_b) / const_b) * (
-                    124 + (const_a * df["R4_fcst"] - df_pi["R5_Flow"].iloc[-1]))
+                    124 + (const_a * df["R4_fcst"] - df_pi["R5L_Flow"].iloc[-1]))
         df["Pmax2"] = ((const_a + const_b) / const_a) * (
-                    86 - (const_b * df["R4_fcst"] - df_pi["R5_Flow"].iloc[-1]))
+                    86 - (const_b * df["R4_fcst"] - df_pi["R5L_Flow"].iloc[-1]))
 
         df["Pmax"] = df[["Pmax1", "Pmax2"]].min(axis=1)
 
@@ -1083,12 +1088,12 @@ def abay_forecast(df, df_pi):
     # Conversion from MW to cfs ==> CFS @ Oxbow = MW * 163.73 + 83.956
     df["Oxbow_Outflow"] = (df["Oxbow_fcst"] * 163.73) + 83.956
 
-    # R5 Valve never changes (at least not in the last 5 years in PI data)
-    df["R5_Valve"] = 28
+    # R5 Value never changes (at least not in the last 5 years in PI data)
+    df["R5L_Value"] = 28
 
     # If CCS is on, we need to account for the fact that Ralston will run at least at the requirement for the Pmin.
     if CCS:
-        #df["RA_MW"] = max(df["RA_MW"], min(86,((df["R4_fcst"]-df["R5_Valve"])/10)*RAtoMF_ratio))
+        #df["RA_MW"] = max(df["RA_MW"], min(86,((df["R4_fcst"]-df["R5_Value"])/10)*RAtoMF_ratio))
         df["RA_MW"] = np.maximum(df["RA_MW"], df["Pmin"] * RAtoMF_ratio)
 
     # Polynomial best fits for conversions.
@@ -1104,7 +1109,7 @@ def abay_forecast(df, df_pi):
     # It helps to look at the PI Vision screen for this.
     # Ibay In: 1) Inflow from MFPH (the water that's powering MFPH)
     #          2) The water flowing in at R4
-    # Ibay Out: 1) Valve above R5 (nearly always 28)         = 28
+    # Ibay Out: 1) Value above R5 (nearly always 28)         = 28
     #           2) Outflow through tunnel to power Ralston.  = RA_out (CAN BE INFLUENCED BY CCS MODE, I.E. R4)
     #           3) Spill                                     = (MF_IN - RA_OUT) + R4
     #
@@ -1139,7 +1144,7 @@ def abay_forecast(df, df_pi):
     #        observed error.
     #
     # Ibay In - Ibay Out = The spill that will eventually make it into Abay through R20.
-    df["Ibay_Spill"] = np.maximum(0,(df["MF_Inflow"] - df["RA_Inflow"])) + df["R5_Valve"] + df['R4_fcst']
+    df["Ibay_Spill"] = np.maximum(0,(df["MF_Inflow"] - df["RA_Inflow"])) + df["R5L_Value"] + df['R4_fcst']
 
     # CNRFC is just forecasting natural flow, which I believe is just everything from Ibay down. Therefore, it should
     # always be too low and needs to account for any water getting released from IBAY.

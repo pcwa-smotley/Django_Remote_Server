@@ -15,7 +15,7 @@ import os, platform, sys
 import environ
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
-#from celery.schedules import crontab
+from celery.schedules import crontab
 
 sentry_sdk.init(
     dsn="https://7ba428aaa7c64ce599540696a815522f@o746682.ingest.sentry.io/5790964",
@@ -46,17 +46,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-aan%ada5#)5ty!i7)5c0mm2e7+^k1p^$^-!r#*=!@u380h$3sx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['energy.pcwa.net', '174.138.60.125', '127.0.0.1']
 
+# This is only for debug toolbar
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    #'django_celery_beat',
-    #'django_celery_results',
+    "debug_toolbar",
+    'django_celery_beat',
+    'django_celery_results',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -80,6 +85,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_plotly_dash.middleware.BaseMiddleware',
     'django_plotly_dash.middleware.ExternalRedirectionMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'wx.urls'
@@ -114,6 +120,32 @@ DATABASES = {
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'celery_err.log',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+        'db': {
+            'level': 'DEBUG',
+            'class': 'AbayDashboard.celery_log_handler.DatabaseLogHandler',
+        },
+    },
+    'loggers': {
+        'celery': {
+            'handlers': ['file', 'console', 'db'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -178,21 +210,26 @@ EMAIL_HOST_USER = env('GMAIL_USER')
 EMAIL_HOST_PASSWORD = env('GMAIL_PASSWORD')
 EMAIL_USE_SSL = True
 
-# # Celery settings for looping pi_checker.py
-# CELERY_BROKER_URL = 'redis://localhost:6379/0'
-# CELERY_RESULT_BACKEND = 'django-db'
-# CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'UTC'
-#
-# CELERY_BEAT_SCHEDULE = {
-#     'run_main_every_minute': {
-#         'task': 'AbayDashboard.pi_checker',
-#         'schedule': crontab(minute='*/1'),  # Executes every minute
-#     },
-#     'run_get_cnrfc_data_every_30_minutes': {
-#         'task': 'AbayDashboard.pi_checker.get_cnrfc_data',
-#         'schedule': crontab(minute='*/30'),  # Executes every 30 minutes
-#     },
-# }
+# Celery settings for looping pi_checker.py
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_IMPORTS = ("AbayDashboard.pi_checker", )
+
+CELERY_BEAT_SCHEDULE = {
+    'run_main_every_minute': {
+        'task': 'AbayDashboard.pi_checker.main',
+        'schedule': crontab(minute='*/1'),  # Executes every minute
+    },
+    'run_get_cnrfc_data_every_30_minutes': {
+        'task': 'AbayDashboard.pi_checker.get_cnrfc_data',
+        'schedule': crontab(minute='*/30'),  # Executes every 30 minutes
+    },
+    # 'run_health_check_every_10_minutes': {
+    #         'task': 'AbayDashboard.tasks.celery_health_check.health_check',
+    #         'schedule': crontab(minute='*/5'),  # Executes every 10 minutes
+    # },
+}

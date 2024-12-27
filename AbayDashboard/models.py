@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from datetime import datetime, timedelta
 import calendar
+from django.utils import timezone
 import pytz
 # Create your models here.
 
@@ -210,7 +211,7 @@ class PiData(models.Model):
     id = models.AutoField(primary_key=True)
     Timestamp = models.DateTimeField(null=True, default=None)
     R4_Flow = models.FloatField(null=True, default=None)
-    R5_Flow = models.FloatField(null=True, default=None)
+    R5L_Flow = models.FloatField(null=True, default=None)
     R11_Flow = models.FloatField(null=True, default=None)
     R30_Flow = models.FloatField(null=True, default=None)
     UnitsAbbreviation = models.TextField(null=True, default=None)
@@ -229,6 +230,9 @@ class PiData(models.Model):
 class ForecastData(models.Model):
     class Meta:
         db_table = 'forecast_data'
+
+        # We want managed to = False so that Django doesn't try to create a table for this model. It is being
+        # created by the pi_checker.py script, and we just want to read from it.
         managed = False
 
     index = models.AutoField(primary_key=True)
@@ -247,7 +251,7 @@ class ForecastData(models.Model):
     MF_MW = models.FloatField(null=True, default=None)
     Oxbow_fcst = models.FloatField(null=True, default=None)
     Oxbow_Outflow = models.FloatField(null=True, default=None)
-    #R5_Value = models.FloatField(null=True, default=None)
+    R5L_Value = models.FloatField(null=True, default=None)
     RA_Inflow = models.FloatField(null=True, default=None)
     MF_Inflow = models.FloatField(null=True, default=None)
     Ibay_Spill = models.FloatField(null=True, default=None)
@@ -260,6 +264,19 @@ class ForecastData(models.Model):
     Abay_AF_Fcst = models.FloatField(null=True, default=None)
     Abay_Elev_Fcst = models.FloatField(null=True, default=None)
 
+class CeleryLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    level = models.CharField(max_length=10)
+    message = models.TextField()
+
+    def save(self, *args, **kwargs):
+        # local_tz = pytz.timezone('America/Los_Angeles')  # Replace with your local timezone
+        # self.timestamp = timezone.now().astimezone(local_tz)
+        super(CeleryLog, self).save(*args, **kwargs)
+    # task_name = models.CharField(max_length=255)
+    # updated_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.timestamp} - {self.level} - {self.message}"
 
 # Whenever there is a post_save in the User model, run the following code
 @receiver(post_save, sender=User)

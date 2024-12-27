@@ -98,7 +98,9 @@ def main_layout(top_row_cards, second_row_cards, locations_types):
     return main_html
 
 
-def top_cards(df_all, df_hourly_resample):
+def top_cards(df_all, df_hourly_resample, logging):
+    logger = logging.getLogger(__name__)
+
     top_row = dbc.Row([
         # Top Card Columns.
         # Every card in this  column denoted by a classname of: col-md-6 col-xxl-3 mb-3 pr-md-2"

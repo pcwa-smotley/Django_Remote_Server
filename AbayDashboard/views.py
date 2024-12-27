@@ -138,7 +138,7 @@ def dash_django(request):
                 # If the request is ajax, you don't want to reload the page. But since we're not reloading the page
                 # we are also not going to reload {% messages.html %}. Therefore, you have to pass the message info
                 # back through the ajax data
-                if request.is_ajax():
+                if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
                     message_data = ajax_msg_builder(request)
                     return HttpResponse(message_data, content_type="application/json")
                 return redirect("AbayDashboard:dash_django")
